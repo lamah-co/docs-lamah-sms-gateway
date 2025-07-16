@@ -1,33 +1,146 @@
 ---
-title: 'Introduction'
-description: 'Example section for showcasing API endpoints'
+title: 'API Reference'
+description: 'Complete reference for the Lamah SMS API'
 ---
 
-<Note>
-  If you're not looking to build API reference documentation, you can delete
-  this section by removing the api-reference folder.
-</Note>
+## Welcome to the Lamah SMS API
 
-## Welcome
+The Lamah SMS API is a RESTful API that allows you to send SMS messages, manage OTP verification, and handle communication workflows programmatically. Our API is designed to be simple, reliable, and scalable.
 
-There are two ways to build API documentation: [OpenAPI](https://mintlify.com/docs/api-playground/openapi/setup) and [MDX components](https://mintlify.com/docs/api-playground/mdx/configuration). For the starter kit, we are using the following OpenAPI specification.
+**Base URL**: `https://sms.lamah.com`
 
-<Card
-  title="Plant Store Endpoints"
-  icon="leaf"
-  href="https://github.com/mintlify/starter/blob/main/api-reference/openapi.json"
->
-  View the OpenAPI specification file
-</Card>
+## API Overview
+
+The Lamah SMS API provides the following core functionalities:
+
+<CardGroup cols={2}>
+  <Card
+    title="SMS Messaging"
+    icon="message"
+    href="/api-reference/sms/send-message"
+  >
+    Send single messages, bulk SMS, and template-based messages
+  </Card>
+  <Card
+    title="OTP Services"
+    icon="shield-check"
+    href="/api-reference/otp/initiate"
+  >
+    Generate and verify one-time passwords for authentication
+  </Card>
+  <Card
+    title="Project Management"
+    icon="folder"
+    href="/api-reference/project/details"
+  >
+    Manage projects, check balances, and track usage
+  </Card>
+  <Card
+    title="Utilities"
+    icon="tools"
+    href="/api-reference/utilities/plans"
+  >
+    Access plans, cities, FAQ, and contact information
+  </Card>
+</CardGroup>
 
 ## Authentication
 
-All API endpoints are authenticated using Bearer tokens and picked up from the specification file.
+All API endpoints require authentication using Bearer tokens. Include your API token in the Authorization header:
 
-```json
-"security": [
-  {
-    "bearerAuth": []
-  }
-]
+```http
+Authorization: Bearer YOUR_API_TOKEN
 ```
+
+You can obtain your API token from your [Lamah dashboard](https://sms.lamah.com) by:
+1. Navigating to the Projects section
+2. Creating or selecting a project
+3. Copying the API token from the project details
+
+## Request Format
+
+All requests should be made using HTTPS and include the appropriate headers:
+
+```http
+Content-Type: application/json
+Authorization: Bearer YOUR_API_TOKEN
+Accept: application/json
+```
+
+## Response Format
+
+All API responses are returned in JSON format. Successful responses will include the requested data, while error responses will include error details and status codes.
+
+### Success Response Example
+```json
+{
+  "message_id": "msg_123456789",
+  "status": "sent",
+  "cost": 0.05
+}
+```
+
+### Error Response Example
+```json
+{
+  "error": "Invalid phone number format",
+  "code": "INVALID_PHONE",
+  "status": 400
+}
+```
+
+## Rate Limits
+
+The API has rate limits to ensure fair usage:
+- **SMS Endpoints**: 100 requests per minute
+- **OTP Endpoints**: 10 requests per minute per phone number
+- **Other Endpoints**: 1000 requests per minute
+
+Rate limit headers are included in all responses:
+```http
+X-RateLimit-Limit: 100
+X-RateLimit-Remaining: 95
+X-RateLimit-Reset: 1640995200
+```
+
+## Error Codes
+
+Common HTTP status codes used by the API:
+
+| Status Code | Description |
+|-------------|-------------|
+| 200 | Success |
+| 400 | Bad Request - Invalid parameters |
+| 401 | Unauthorized - Invalid or missing API token |
+| 403 | Forbidden - Insufficient permissions |
+| 404 | Not Found - Resource not found |
+| 429 | Too Many Requests - Rate limit exceeded |
+| 500 | Internal Server Error |
+
+## SDKs and Libraries
+
+We provide official SDKs for popular programming languages:
+
+<CardGroup cols={3}>
+  <Card
+    title="JavaScript/Node.js"
+    icon="js"
+    href="https://github.com/lamah-co/lamah-js"
+  >
+    Official JavaScript SDK
+  </Card>
+  <Card
+    title="Python"
+    icon="python"
+    href="https://github.com/lamah-co/lamah-python"
+  >
+    Official Python SDK
+  </Card>
+  <Card
+    title="PHP"
+    icon="php"
+    href="https://github.com/lamah-co/lamah-php"
+  >
+    Official PHP SDK
+  </Card>
+</CardGroup>

@@ -1,0 +1,225 @@
+---
+title: 'Authentication'
+description: 'Learn how to authenticate your API requests'
+---
+
+## Overview
+
+The Lamah SMS API uses Bearer token authentication. All API requests must include a valid API token in the Authorization header.
+
+## Getting Your API Token
+
+<Steps>
+  <Step title="Log into Dashboard">
+    Visit [https://sms.lamah.com](https://sms.lamah.com) and log into your account.
+  </Step>
+  <Step title="Navigate to Projects">
+    Go to the **Projects** section in your dashboard.
+  </Step>
+  <Step title="Create or Select Project">
+    Create a new project or select an existing one.
+  </Step>
+  <Step title="Copy API Token">
+    Find and copy the **API token** from the project details page.
+  </Step>
+</Steps>
+
+## Using Your API Token
+
+Include your API token in the `Authorization` header of every request:
+
+<CodeGroup>
+
+```bash cURL
+curl --request GET \
+  "https://sms.lamah.com/api/project/details" \
+  --header "Authorization: Bearer YOUR_API_TOKEN" \
+  --header "Accept: application/json"
+```
+
+```javascript JavaScript
+const headers = {
+  'Authorization': 'Bearer YOUR_API_TOKEN',
+  'Content-Type': 'application/json',
+  'Accept': 'application/json'
+};
+
+const response = await fetch('https://sms.lamah.com/api/project/details', {
+  method: 'GET',
+  headers: headers
+});
+```
+
+```python Python
+import requests
+
+headers = {
+    'Authorization': 'Bearer YOUR_API_TOKEN',
+    'Content-Type': 'application/json',
+    'Accept': 'application/json'
+}
+
+response = requests.get(
+    'https://sms.lamah.com/api/project/details',
+    headers=headers
+)
+```
+
+```php PHP
+<?php
+$headers = [
+    'Authorization: Bearer YOUR_API_TOKEN',
+    'Content-Type: application/json',
+    'Accept: application/json'
+];
+
+$curl = curl_init();
+curl_setopt_array($curl, [
+    CURLOPT_URL => 'https://sms.lamah.com/api/project/details',
+    CURLOPT_RETURNTRANSFER => true,
+    CURLOPT_HTTPHEADER => $headers,
+]);
+
+$response = curl_exec($curl);
+curl_close($curl);
+?>
+```
+
+</CodeGroup>
+
+## Authentication Errors
+
+If authentication fails, you'll receive a `401 Unauthorized` response:
+
+```json
+{
+  "error": "Unauthorized",
+  "message": "Invalid or missing API token",
+  "code": "INVALID_TOKEN"
+}
+```
+
+Common authentication issues:
+
+<AccordionGroup>
+  <Accordion title="Missing Authorization Header">
+    Make sure you include the `Authorization` header in every request.
+    
+    ```http
+    Authorization: Bearer YOUR_API_TOKEN
+    ```
+  </Accordion>
+  
+  <Accordion title="Invalid Token Format">
+    Ensure your token follows the correct format: `Bearer YOUR_API_TOKEN`
+    
+    ❌ **Incorrect:**
+    ```http
+    Authorization: YOUR_API_TOKEN
+    Authorization: Token YOUR_API_TOKEN
+    ```
+    
+    ✅ **Correct:**
+    ```http
+    Authorization: Bearer YOUR_API_TOKEN
+    ```
+  </Accordion>
+  
+  <Accordion title="Expired or Invalid Token">
+    If your token is expired or invalid, generate a new one from your dashboard.
+  </Accordion>
+  
+  <Accordion title="Insufficient Permissions">
+    Make sure your project has the necessary permissions for the endpoint you're trying to access.
+  </Accordion>
+</AccordionGroup>
+
+## Security Best Practices
+
+<Warning>
+  Keep your API tokens secure and never expose them in client-side code or public repositories.
+</Warning>
+
+### Token Security Guidelines
+
+1. **Store Securely**: Store your API tokens in environment variables or secure configuration files
+2. **Rotate Regularly**: Regenerate your tokens periodically for enhanced security
+3. **Use HTTPS**: Always use HTTPS when making API requests
+4. **Monitor Usage**: Regularly monitor your API usage for any suspicious activity
+
+### Environment Variables Example
+
+<CodeGroup>
+
+```bash Environment Variables
+# .env file
+LAMAH_API_TOKEN=your_actual_api_token_here
+LAMAH_BASE_URL=https://sms.lamah.com
+```
+
+```javascript JavaScript
+// Using environment variables
+const apiToken = process.env.LAMAH_API_TOKEN;
+const baseUrl = process.env.LAMAH_BASE_URL;
+
+const headers = {
+  'Authorization': `Bearer ${apiToken}`,
+  'Content-Type': 'application/json'
+};
+```
+
+```python Python
+import os
+
+# Using environment variables
+api_token = os.getenv('LAMAH_API_TOKEN')
+base_url = os.getenv('LAMAH_BASE_URL')
+
+headers = {
+    'Authorization': f'Bearer {api_token}',
+    'Content-Type': 'application/json'
+}
+```
+
+</CodeGroup>
+
+## Testing Authentication
+
+You can test your authentication by calling the project details endpoint:
+
+<CodeGroup>
+
+```bash Test Authentication
+curl --request GET \
+  "https://sms.lamah.com/api/project/details" \
+  --header "Authorization: Bearer YOUR_API_TOKEN"
+```
+
+```javascript Test Authentication
+const testAuth = async () => {
+  try {
+    const response = await fetch('https://sms.lamah.com/api/project/details', {
+      headers: {
+        'Authorization': 'Bearer YOUR_API_TOKEN',
+        'Accept': 'application/json'
+      }
+    });
+    
+    if (response.ok) {
+      console.log('Authentication successful!');
+      const data = await response.json();
+      console.log('Project details:', data);
+    } else {
+      console.log('Authentication failed:', response.status);
+    }
+  } catch (error) {
+    console.error('Error:', error);
+  }
+};
+
+testAuth();
+```
+
+</CodeGroup>
+
+A successful response will return your project details, confirming that your authentication is working correctly.
