@@ -7,7 +7,7 @@
     "light": "#ffc10e",
     "dark": "#ffc10e"
   },
-  "favicon": "https://sms.lamah.com/logo/eshaar-01.svg",
+  "favicon": "https://sms.lamah.com/logo/logo.svg",
   "navigation": {
     "tabs": [
       {
@@ -91,8 +91,8 @@
     }
   },
   "logo": {
-    "light": "https://sms.lamah.com/logo/eshaar-01.svg",
-    "dark": "https://sms.lamah.com/logo/eshaar-02.svg"
+    "light": "https://sms.lamah.com/logo/logo.svg",
+    "dark": "https://sms.lamah.com/logo/logo_white_pro_max.svg"
   },
   "navbar": {
     "links": [
