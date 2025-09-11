@@ -1,0 +1,116 @@
+---
+title: 'Usage and Consumptions'
+description: 'Retrieve project SMS consumption records with pagination and date filters'
+---
+
+## Overview
+
+Retrieve a paginated list of your project's SMS consumption records. Useful for billing, analytics, and usage tracking.
+
+## Endpoint
+
+`GET https://sms.lamah.com/api/project/consumptions`
+
+## Query Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `page` | integer | ❌ | Page number (default: 1) |
+| `per_page` | integer | ❌ | Items per page (default: 25) |
+| `from` | string (date) | ❌ | Filter records on/after this date (`YYYY-MM-DD`) |
+| `to` | string (date) | ❌ | Filter records on/before this date (`YYYY-MM-DD`) |
+
+## Examples
+
+<CodeGroup>
+
+```bash cURL
+curl --request GET \
+  "https://sms.lamah.com/api/project/consumptions?page=1&per_page=25&from=2024-01-01&to=2024-12-31" \
+  --header "Authorization: Bearer YOUR_API_TOKEN" \
+  --header "Accept: application/json"
+```
+
+```javascript JavaScript
+const url = new URL('https://sms.lamah.com/api/project/consumptions');
+url.searchParams.set('page', '1');
+url.searchParams.set('per_page', '25');
+url.searchParams.set('from', '2024-01-01');
+url.searchParams.set('to', '2024-12-31');
+
+const res = await fetch(url, {
+  headers: { 'Authorization': 'Bearer YOUR_API_TOKEN' }
+});
+const data = await res.json();
+console.log(data);
+```
+
+```python Python
+import requests
+
+params = { 'page': 1, 'per_page': 25, 'from': '2024-01-01', 'to': '2024-12-31' }
+resp = requests.get(
+    "https://sms.lamah.com/api/project/consumptions",
+    headers={"Authorization": "Bearer YOUR_API_TOKEN"},
+    params=params,
+)
+print(resp.json())
+```
+
+```php PHP
+<?php
+$url = 'https://sms.lamah.com/api/project/consumptions?page=1&per_page=25&from=2024-01-01&to=2024-12-31';
+$ch = curl_init($url);
+curl_setopt_array($ch, [
+  CURLOPT_HTTPHEADER => [
+    'Authorization: Bearer YOUR_API_TOKEN',
+    'Accept: application/json',
+  ],
+  CURLOPT_RETURNTRANSFER => true,
+]);
+$response = curl_exec($ch);
+curl_close($ch);
+echo $response;
+```
+
+</CodeGroup>
+
+## Response
+
+### Success Response (200 OK)
+
+```json
+{
+  "data": {
+    "current_page": 1,
+    "data": [
+      {
+        "consumption": 5,
+        "type": "SMS",
+        "created_at": "2024-01-15T10:30:00Z",
+        "updated_at": "2024-01-15T10:30:00Z"
+      }
+    ],
+    "per_page": 25,
+    "last_page": 10,
+    "total": 250
+  }
+}
+```
+
+### Response Fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `data` | object | Laravel paginator object |
+| `data.data[]` | array | List of consumption records |
+| `consumption` | integer | Units consumed (e.g., SMS parts) |
+| `type` | string | Feature type, e.g., `SMS` or `OTP` |
+| `created_at` | string | Timestamp when consumption was recorded |
+| `updated_at` | string | Timestamp when record was updated |
+
+## Notes
+
+- Records include SMS sends and other usage impacting your balance.
+- Timestamps are returned in UTC. Apply your desired timezone in reporting.
+- Filter by date range to analyze campaigns (e.g., Libyan market promo week).

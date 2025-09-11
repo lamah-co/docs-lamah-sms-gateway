@@ -3,11 +3,11 @@
   "theme": "mint",
   "name": "Lamah SMS API",
   "colors": {
-    "primary": "#2563EB",
-    "light": "#3B82F6",
-    "dark": "#1D4ED8"
+    "primary": "#ffc10e",
+    "light": "#ffc10e",
+    "dark": "#ffc10e"
   },
-  "favicon": "/favicon.svg",
+  "favicon": "https://sms.lamah.com/logo/eshaar-01.svg",
   "navigation": {
     "tabs": [
       {
@@ -68,15 +68,6 @@
               "api-reference/project/contacts",
               "api-reference/project/consumptions"
             ]
-          },
-          {
-            "group": "Utilities",
-            "pages": [
-              "api-reference/utilities/plans",
-              "api-reference/utilities/cities",
-              "api-reference/utilities/faq",
-              "api-reference/utilities/contact-us"
-            ]
           }
         ]
       }
@@ -85,12 +76,12 @@
       "anchors": [
         {
           "anchor": "API Documentation",
-          "href": "https://sms.lamah.com/docs",
+          "href": "https://sms.lamah.com/docs/index.html",
           "icon": "book-open-cover"
         },
         {
           "anchor": "Dashboard",
-          "href": "https://sms.lamah.com",
+          "href": "https://sms.lamah.com/company",
           "icon": "chart-line"
         },
         {
@@ -102,8 +93,8 @@
     }
   },
   "logo": {
-    "light": "/logo/light.svg",
-    "dark": "/logo/dark.svg"
+    "light": "https://sms.lamah.com/logo/eshaar-01.svg",
+    "dark": "https://sms.lamah.com/logo/eshaar-02.svg"
   },
   "navbar": {
     "links": [

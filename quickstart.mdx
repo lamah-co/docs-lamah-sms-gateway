@@ -40,8 +40,8 @@ curl --request POST \
   --header "Authorization: Bearer YOUR_API_TOKEN" \
   --header "Content-Type: application/json" \
   --data '{
-    "message": "Hello from Lamah SMS API!",
-    "sender": "Lamah",
+    "message": "تم استلام استفسارك عن الشقة في حي الأندلس – سنعاودك خلال 15 دقيقة",
+    "sender": "RealEstate",
     "payment_type": "wallet",
     "receiver": "00218911234567"
   }'
@@ -55,8 +55,8 @@ const response = await fetch('https://sms.lamah.com/api/sms/messages', {
     'Content-Type': 'application/json',
   },
   body: JSON.stringify({
-    message: 'Hello from Lamah SMS API!',
-    sender: 'Lamah',
+    message: 'تم استلام استفسارك عن الشقة في حي الأندلس – سنعاودك خلال 15 دقيقة',
+    sender: 'RealEstate',
     payment_type: 'wallet',
     receiver: '00218911234567'
   })
@@ -75,8 +75,8 @@ headers = {
     "Content-Type": "application/json"
 }
 data = {
-    "message": "Hello from Lamah SMS API!",
-    "sender": "Lamah",
+    "message": "تم استلام استفسارك عن الشقة في حي الأندلس – سنعاودك خلال 15 دقيقة",
+    "sender": "RealEstate",
     "payment_type": "wallet",
     "receiver": "00218911234567"
 }
@@ -94,8 +94,8 @@ curl_setopt_array($curl, array(
   CURLOPT_RETURNTRANSFER => true,
   CURLOPT_CUSTOMREQUEST => 'POST',
   CURLOPT_POSTFIELDS => json_encode([
-    'message' => 'Hello from Lamah SMS API!',
-    'sender' => 'Lamah',
+    'message' => 'تم استلام استفسارك عن الشقة في حي الأندلس – سنعاودك خلال 15 دقيقة',
+    'sender' => 'RealEstate',
     'payment_type' => 'wallet',
     'receiver' => '00218911234567'
   ]),
@@ -121,9 +121,7 @@ A successful SMS send will return a response like this:
 ```json
 {
   "message_id": "msg_123456789",
-  "status": "sent",
   "cost": 0.05,
-  "balance_remaining": 99.95
 }
 ```
 
@@ -148,7 +146,7 @@ Now that you've sent your first SMS, explore more features:
   </Card>
   <Card
     title="Template Messages"
-    icon="file-text"
+    icon="file-lines"
     href="/api-reference/sms/send-template"
   >
     Use pre-defined templates for consistent messaging

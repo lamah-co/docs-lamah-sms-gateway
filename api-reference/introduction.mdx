@@ -35,14 +35,12 @@ The Lamah SMS API provides the following core functionalities:
   >
     Manage projects, check balances, and track usage
   </Card>
-  <Card
-    title="Utilities"
-    icon="tools"
-    href="/api-reference/utilities/plans"
-  >
-    Access plans, cities, FAQ, and contact information
-  </Card>
+  
 </CardGroup>
+
+## Example Scenario
+
+See real estate flows with Libyan numbers in `snippets/real-estate-libya.mdx`.
 
 ## Authentication
 
@@ -66,6 +64,10 @@ Content-Type: application/json
 Authorization: Bearer YOUR_API_TOKEN
 Accept: application/json
 ```
+
+<Note>
+  Spec source: Postman collection at https://sms.lamah.com/docs/collection.json
+</Note>
 
 ## Response Format
 
@@ -144,3 +146,11 @@ We provide official SDKs for popular programming languages:
     Official PHP SDK
   </Card>
 </CardGroup>
+
+## Postman Collection
+
+Download the latest Postman Collection that mirrors these endpoints:
+
+- `api-reference/openapi.json` (Postman collection format)
+
+Import it into Postman to explore, test, and generate client code. All examples in this documentation use realistic Libyan phone numbers in international format (e.g., `+218912345678`).

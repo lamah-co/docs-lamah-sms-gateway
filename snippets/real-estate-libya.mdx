@@ -1,0 +1,66 @@
+---
+title: 'Real Estate: Libya Examples'
+description: 'Practical flows for property leads and viewing confirmations using Libyan numbers'
+---
+
+## Scenario
+
+You run a real estate agency in طرابلس/بنغازي. Use Lamah to:
+- Verify lead phone numbers via OTP
+- Confirm and remind property viewing appointments
+- Broadcast new listing alerts to segmented contact groups
+
+## 1) Verify Lead via OTP
+
+```bash
+curl --request POST \
+  "https://sms.lamah.com/api/otp/initiate" \
+  --header "Authorization: Bearer YOUR_API_TOKEN" \
+  --header "Content-Type: application/json" \
+  --data '{
+    "lang": "ar",
+    "length": 6,
+    "expiration": 5,
+    "sender": "RealEstate",
+    "payment_type": "wallet",
+    "receiver": "+218912345678"
+  }'
+```
+
+Then ask the lead to share the code and verify using `/api/otp/verify`.
+
+## 2) Confirm Viewing Appointment
+
+```bash
+curl --request POST \
+  "https://sms.lamah.com/api/sms/messages" \
+  --header "Authorization: Bearer YOUR_API_TOKEN" \
+  --header "Content-Type: application/json" \
+  --data '{
+    "message": "تم تأكيد موعد معاينة العقار يوم الثلاثاء 4:30 مساءً في حي الأندلس - طرابلس. للالغاء رد بـ 0",
+    "sender": "RealEstate",
+    "payment_type": "wallet",
+    "receiver": "+218926543210"
+  }'
+```
+
+## 3) Broadcast New Listings (Bulk)
+
+```bash
+curl --request POST \
+  "https://sms.lamah.com/api/sms/messages/bulk" \
+  --header "Authorization: Bearer YOUR_API_TOKEN" \
+  --header "Content-Type: application/json" \
+  --data '{
+    "message": "شقق جديدة في قرقارش والأندلس — تواصل معنا للحجز. لإلغاء الاشتراك رد بـ 0",
+    "sender": "RealEstate",
+    "payment_type": "wallet",
+    "receivers": ["+218912345678", "+218922222222", "+218944444444"]
+  }'
+```
+
+## Notes
+
+- Use Libyan numbers in international format: `+2189XXXXXXXX` or `002189XXXXXXXX`.
+- Create groups for city/interest segments and use `/api/sms/messages/contacts` to target them.
+

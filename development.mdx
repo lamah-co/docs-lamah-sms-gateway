@@ -1,22 +1,641 @@
 ---
-title: 'Development'
-description: 'Preview changes locally to update your docs'
+title: 'Development Guide'
+description: 'Best practices for developing with the Lamah SMS API'
 ---
 
-<Info>
-  **Prerequisite**: Please install Node.js (version 19 or higher) before proceeding. <br />
-  Please upgrade to ```docs.json``` before proceeding and delete the legacy ```mint.json``` file.
-</Info>
+## Development Environment Setup
 
-Follow these steps to install and run Mintlify on your operating system:
+Setting up a proper development environment is crucial for building robust SMS applications with the Lamah API.
+
+### API Token Management
+
+<Warning>
+  Never expose your API tokens in client-side code or public repositories. Always use environment variables or secure configuration management.
+</Warning>
+
+<CodeGroup>
+
+```bash Environment Variables
+# .env file
+LAMAH_API_TOKEN=your_api_token_here
+LAMAH_BASE_URL=https://sms.lamah.com
+LAMAH_WEBHOOK_SECRET=your_webhook_secret
+```
+
+```javascript Node.js Setup
+// config.js
+const config = {
+  lamah: {
+    apiToken: process.env.LAMAH_API_TOKEN,
+    baseUrl: process.env.LAMAH_BASE_URL || 'https://sms.lamah.com',
+    webhookSecret: process.env.LAMAH_WEBHOOK_SECRET
+  }
+};
+
+module.exports = config;
+```
+
+```python Python Setup
+# config.py
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+LAMAH_API_TOKEN = os.getenv('LAMAH_API_TOKEN')
+LAMAH_BASE_URL = os.getenv('LAMAH_BASE_URL', 'https://sms.lamah.com')
+LAMAH_WEBHOOK_SECRET = os.getenv('LAMAH_WEBHOOK_SECRET')
+```
+
+</CodeGroup>
+
+## Testing Strategies
+
+### Unit Testing
+
+Test your SMS integration logic without actually sending messages:
+
+<CodeGroup>
+
+```javascript Jest Testing
+// sms.test.js
+const SMSService = require('./sms-service');
+
+// Mock the fetch function
+global.fetch = jest.fn();
+
+describe('SMS Service', () => {
+  beforeEach(() => {
+    fetch.mockClear();
+  });
+
+  test('should send SMS successfully', async () => {
+    const mockResponse = {
+      message_id: 'msg_123',
+      status: 'sent',
+      cost: 0.05
+    };
+
+    fetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => mockResponse
+    });
+
+    const smsService = new SMSService('test-token');
+    const result = await smsService.sendMessage({
+      message: 'رسالة تجريبية من خدمة لمحة',
+      receiver: '00218912345678',
+      sender: 'Lamah'
+    });
+
+    expect(result.success).toBe(true);
+    expect(result.data.message_id).toBe('msg_123');
+    expect(fetch).toHaveBeenCalledWith(
+      'https://sms.lamah.com/api/sms/messages',
+      expect.objectContaining({
+        method: 'POST',
+        headers: expect.objectContaining({
+          'Authorization': 'Bearer test-token'
+        })
+      })
+    );
+  });
+});
+```
+
+```python pytest Testing
+# test_sms.py
+import pytest
+from unittest.mock import Mock, patch
+from sms_service import SMSService
+
+@pytest.fixture
+def sms_service():
+    return SMSService('test-token')
+
+@patch('requests.post')
+def test_send_sms_success(mock_post, sms_service):
+    # Mock successful response
+    mock_response = Mock()
+    mock_response.ok = True
+    mock_response.json.return_value = {
+        'message_id': 'msg_123',
+        'status': 'sent',
+        'cost': 0.05
+    }
+    mock_post.return_value = mock_response
+
+    result = sms_service.send_message(
+        message='رسالة تجريبية من خدمة لمحة',
+        receiver='00218912345678',
+        sender='Lamah'
+    )
+
+    assert result['success'] is True
+    assert result['data']['message_id'] == 'msg_123'
+    mock_post.assert_called_once()
+```
+
+</CodeGroup>
+
+### Integration Testing
+
+Test with the actual API using test phone numbers:
+
+<CodeGroup>
+
+```javascript Integration Test
+// integration.test.js
+const SMSService = require('./sms-service');
+
+describe('SMS Integration Tests', () => {
+  const smsService = new SMSService(process.env.LAMAH_TEST_TOKEN);
+  const testPhoneNumber = process.env.TEST_PHONE_NUMBER;
+
+  test('should send real SMS to test number', async () => {
+    if (!testPhoneNumber) {
+      console.log('Skipping integration test - no test phone number');
+      return;
+    }
+
+    const result = await smsService.sendMessage({
+      message: 'رسالة اختبار تكامل من خدمة لمحة',
+      receiver: testPhoneNumber,
+      sender: 'Lamah',
+      payment_type: 'wallet'
+    });
+
+    expect(result.success).toBe(true);
+    expect(result.data.message_id).toBeDefined();
+
+    // Wait and check message status
+    await new Promise(resolve => setTimeout(resolve, 5000));
+
+    const status = await smsService.getMessageStatus(result.data.message_id);
+    expect(['sent', 'delivered']).toContain(status.status);
+  }, 30000); // 30 second timeout
+});
+```
+
+</CodeGroup>
+
+## Error Handling Best Practices
+
+### Comprehensive Error Handling
+
+<CodeGroup>
+
+```javascript Error Handling
+class SMSService {
+  async sendMessage(messageData) {
+    try {
+      const response = await fetch(`${this.baseUrl}/api/sms/messages`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${this.apiToken}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(messageData)
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        return this.handleAPIError(error, response.status);
+      }
+
+      const result = await response.json();
+      return { success: true, data: result };
+
+    } catch (error) {
+      console.error('Network error:', error);
+      return {
+        success: false,
+        error: 'NETWORK_ERROR',
+        message: 'Failed to connect to SMS service',
+        retryable: true
+      };
+    }
+  }
+
+  handleAPIError(error, statusCode) {
+    const errorMap = {
+      400: { retryable: false, category: 'CLIENT_ERROR' },
+      401: { retryable: false, category: 'AUTH_ERROR' },
+      402: { retryable: false, category: 'PAYMENT_ERROR' },
+      429: { retryable: true, category: 'RATE_LIMIT' },
+      500: { retryable: true, category: 'SERVER_ERROR' }
+    };
+
+    const errorInfo = errorMap[statusCode] || { retryable: false, category: 'UNKNOWN' };
+
+    return {
+      success: false,
+      error: error.code || 'API_ERROR',
+      message: error.error || 'Unknown API error',
+      ...errorInfo,
+      details: error.details
+    };
+  }
+}
+```
+
+```python Error Handling
+import requests
+import time
+from typing import Dict, Any
+
+class SMSService:
+    def __init__(self, api_token: str):
+        self.api_token = api_token
+        self.base_url = 'https://sms.lamah.com'
+
+    def send_message(self, message_data: Dict[str, Any], max_retries: int = 3) -> Dict[str, Any]:
+        for attempt in range(max_retries + 1):
+            try:
+                response = requests.post(
+                    f'{self.base_url}/api/sms/messages',
+                    headers={
+                        'Authorization': f'Bearer {self.api_token}',
+                        'Content-Type': 'application/json'
+                    },
+                    json=message_data,
+                    timeout=30
+                )
+
+                if response.ok:
+                    return {'success': True, 'data': response.json()}
+
+                error_data = response.json()
+                error_result = self._handle_api_error(error_data, response.status_code)
+
+                # Retry for retryable errors
+                if error_result.get('retryable') and attempt < max_retries:
+                    wait_time = 2 ** attempt  # Exponential backoff
+                    time.sleep(wait_time)
+                    continue
+
+                return error_result
+
+            except requests.exceptions.Timeout:
+                if attempt < max_retries:
+                    time.sleep(2 ** attempt)
+                    continue
+                return {
+                    'success': False,
+                    'error': 'TIMEOUT',
+                    'message': 'Request timed out',
+                    'retryable': True
+                }
+            except requests.exceptions.ConnectionError:
+                if attempt < max_retries:
+                    time.sleep(2 ** attempt)
+                    continue
+                return {
+                    'success': False,
+                    'error': 'CONNECTION_ERROR',
+                    'message': 'Failed to connect to SMS service',
+                    'retryable': True
+                }
+
+        return {
+            'success': False,
+            'error': 'MAX_RETRIES_EXCEEDED',
+            'message': 'Maximum retry attempts exceeded'
+        }
+
+    def _handle_api_error(self, error_data: Dict, status_code: int) -> Dict[str, Any]:
+        error_map = {
+            400: {'retryable': False, 'category': 'CLIENT_ERROR'},
+            401: {'retryable': False, 'category': 'AUTH_ERROR'},
+            402: {'retryable': False, 'category': 'PAYMENT_ERROR'},
+            429: {'retryable': True, 'category': 'RATE_LIMIT'},
+            500: {'retryable': True, 'category': 'SERVER_ERROR'}
+        }
+
+        error_info = error_map.get(status_code, {'retryable': False, 'category': 'UNKNOWN'})
+
+        return {
+            'success': False,
+            'error': error_data.get('code', 'API_ERROR'),
+            'message': error_data.get('error', 'Unknown API error'),
+            **error_info,
+            'details': error_data.get('details')
+        }
+```
+
+</CodeGroup>
+
+## Rate Limiting and Retry Logic
+
+### Implementing Backoff Strategies
+
+<CodeGroup>
+
+```javascript Rate Limiting
+class RateLimitedSMSService {
+  constructor(apiToken, maxRequestsPerMinute = 100) {
+    this.apiToken = apiToken;
+    this.maxRequestsPerMinute = maxRequestsPerMinute;
+    this.requestQueue = [];
+    this.processing = false;
+  }
+
+  async sendMessage(messageData) {
+    return new Promise((resolve, reject) => {
+      this.requestQueue.push({ messageData, resolve, reject });
+      this.processQueue();
+    });
+  }
+
+  async processQueue() {
+    if (this.processing || this.requestQueue.length === 0) {
+      return;
+    }
+
+    this.processing = true;
+    const intervalMs = (60 * 1000) / this.maxRequestsPerMinute;
+
+    while (this.requestQueue.length > 0) {
+      const { messageData, resolve, reject } = this.requestQueue.shift();
+
+      try {
+        const result = await this.makeRequest(messageData);
+        resolve(result);
+      } catch (error) {
+        reject(error);
+      }
+
+      // Wait before next request
+      if (this.requestQueue.length > 0) {
+        await new Promise(resolve => setTimeout(resolve, intervalMs));
+      }
+    }
+
+    this.processing = false;
+  }
+
+  async makeRequest(messageData) {
+    // Implement actual API request with retry logic
+    return this.sendWithRetry(messageData);
+  }
+}
+```
+
+</CodeGroup>
+
+## Webhook Development
+
+### Setting Up Webhook Endpoints
+
+<CodeGroup>
+
+```javascript Express.js Webhook
+const express = require('express');
+const crypto = require('crypto');
+const app = express();
+
+app.use(express.json());
+
+// Webhook signature verification
+const verifyWebhookSignature = (req, res, next) => {
+  const signature = req.headers['x-lamah-signature'];
+  const payload = JSON.stringify(req.body);
+  const secret = process.env.LAMAH_WEBHOOK_SECRET;
+
+  const expectedSignature = crypto
+    .createHmac('sha256', secret)
+    .update(payload)
+    .digest('hex');
+
+  if (signature !== `sha256=${expectedSignature}`) {
+    return res.status(401).json({ error: 'Invalid signature' });
+  }
+
+  next();
+};
+
+app.post('/webhooks/sms', verifyWebhookSignature, (req, res) => {
+  const { event, message_id, status, delivered_at } = req.body;
+
+  console.log(`Webhook received: ${event} for message ${message_id}`);
+
+  switch (event) {
+    case 'message.delivered':
+      handleMessageDelivered(message_id, delivered_at);
+      break;
+    case 'message.failed':
+      handleMessageFailed(message_id, req.body.error);
+      break;
+    default:
+      console.log(`Unknown event: ${event}`);
+  }
+
+  res.status(200).json({ received: true });
+});
+
+const handleMessageDelivered = (messageId, deliveredAt) => {
+  // Update your database
+  console.log(`Message ${messageId} delivered at ${deliveredAt}`);
+};
+
+const handleMessageFailed = (messageId, error) => {
+  // Handle failed message
+  console.log(`Message ${messageId} failed: ${error}`);
+};
+
+app.listen(3000, () => {
+  console.log('Webhook server running on port 3000');
+});
+```
+
+```python Flask Webhook
+from flask import Flask, request, jsonify
+import hashlib
+import hmac
+import os
+
+app = Flask(__name__)
+
+def verify_webhook_signature(payload, signature, secret):
+    expected_signature = hmac.new(
+        secret.encode('utf-8'),
+        payload.encode('utf-8'),
+        hashlib.sha256
+    ).hexdigest()
+
+    return hmac.compare_digest(f"sha256={expected_signature}", signature)
+
+@app.route('/webhooks/sms', methods=['POST'])
+def handle_sms_webhook():
+    signature = request.headers.get('X-Lamah-Signature')
+    payload = request.get_data(as_text=True)
+    secret = os.getenv('LAMAH_WEBHOOK_SECRET')
+
+    if not verify_webhook_signature(payload, signature, secret):
+        return jsonify({'error': 'Invalid signature'}), 401
+
+    data = request.json
+    event = data.get('event')
+    message_id = data.get('message_id')
+
+    print(f"Webhook received: {event} for message {message_id}")
+
+    if event == 'message.delivered':
+        handle_message_delivered(message_id, data.get('delivered_at'))
+    elif event == 'message.failed':
+        handle_message_failed(message_id, data.get('error'))
+
+    return jsonify({'received': True})
+
+def handle_message_delivered(message_id, delivered_at):
+    # Update your database
+    print(f"Message {message_id} delivered at {delivered_at}")
+
+def handle_message_failed(message_id, error):
+    # Handle failed message
+    print(f"Message {message_id} failed: {error}")
+
+if __name__ == '__main__':
+    app.run(port=3000, debug=True)
+```
+
+</CodeGroup>
+
+## Performance Optimization
+
+### Connection Pooling and Caching
+
+<CodeGroup>
+
+```javascript Performance Tips
+// Use connection pooling for high-volume applications
+const https = require('https');
+
+const agent = new https.Agent({
+  keepAlive: true,
+  maxSockets: 50,
+  maxFreeSockets: 10,
+  timeout: 60000,
+  freeSocketTimeout: 30000
+});
+
+// Cache frequently accessed data
+class SMSServiceWithCache {
+  constructor(apiToken) {
+    this.apiToken = apiToken;
+    this.cache = new Map();
+    this.cacheTimeout = 5 * 60 * 1000; // 5 minutes
+  }
+
+  async getProjectDetails() {
+    const cacheKey = 'project_details';
+    const cached = this.cache.get(cacheKey);
+
+    if (cached && Date.now() - cached.timestamp < this.cacheTimeout) {
+      return cached.data;
+    }
+
+    const details = await this.fetchProjectDetails();
+    this.cache.set(cacheKey, {
+      data: details,
+      timestamp: Date.now()
+    });
+
+    return details;
+  }
+}
+```
+
+</CodeGroup>
+
+## Monitoring and Logging
+
+### Structured Logging
+
+<CodeGroup>
+
+```javascript Logging
+const winston = require('winston');
+
+const logger = winston.createLogger({
+  level: 'info',
+  format: winston.format.combine(
+    winston.format.timestamp(),
+    winston.format.errors({ stack: true }),
+    winston.format.json()
+  ),
+  transports: [
+    new winston.transports.File({ filename: 'sms-error.log', level: 'error' }),
+    new winston.transports.File({ filename: 'sms-combined.log' })
+  ]
+});
+
+class SMSService {
+  async sendMessage(messageData) {
+    const startTime = Date.now();
+
+    logger.info('SMS send initiated', {
+      receiver: messageData.receiver,
+      sender: messageData.sender,
+      messageLength: messageData.message.length
+    });
+
+    try {
+      const result = await this.makeAPICall(messageData);
+
+      logger.info('SMS sent successfully', {
+        messageId: result.message_id,
+        cost: result.cost,
+        duration: Date.now() - startTime
+      });
+
+      return result;
+    } catch (error) {
+      logger.error('SMS send failed', {
+        error: error.message,
+        receiver: messageData.receiver,
+        duration: Date.now() - startTime
+      });
+      throw error;
+    }
+  }
+}
+```
+
+</CodeGroup>
+
+## Security Best Practices
+
+<CardGroup cols={2}>
+  <Card title="Token Security" icon="key">
+    Store API tokens securely and rotate them regularly
+  </Card>
+  <Card title="Input Validation" icon="shield-check">
+    Validate all phone numbers and message content
+  </Card>
+  <Card title="Rate Limiting" icon="gauge">
+    Implement client-side rate limiting to prevent abuse
+  </Card>
+  <Card title="Webhook Security" icon="lock">
+    Always verify webhook signatures
+  </Card>
+</CardGroup>
+
+## Documentation Preview
+
+To preview these documentation changes locally:
+
+<Info>
+  **Prerequisite**: Please install Node.js (version 19 or higher) before proceeding.
+</Info>
 
 **Step 1**: Install Mintlify:
 
 <CodeGroup>
 
-  ```bash npm
-  npm i -g mintlify
-  ```
+```bash npm
+npm i -g mintlify
+```
 
 ```bash yarn
 yarn global add mintlify
@@ -24,84 +643,10 @@ yarn global add mintlify
 
 </CodeGroup>
 
-**Step 2**: Navigate to the docs directory (where the `docs.json` file is located) and execute the following command:
+**Step 2**: Navigate to the docs directory and run:
 
 ```bash
 mintlify dev
 ```
 
-A local preview of your documentation will be available at `http://localhost:3000`.
-
-### Custom Ports
-
-By default, Mintlify uses port 3000. You can customize the port Mintlify runs on by using the `--port` flag. To run Mintlify on port 3333, for instance, use this command:
-
-```bash
-mintlify dev --port 3333
-```
-
-If you attempt to run Mintlify on a port that's already in use, it will use the next available port:
-
-```md
-Port 3000 is already in use. Trying 3001 instead.
-```
-
-## Mintlify Versions
-
-Please note that each CLI release is associated with a specific version of Mintlify. If your local website doesn't align with the production version, please update the CLI:
-
-<CodeGroup>
-
-```bash npm
-npm i -g mintlify@latest
-```
-
-```bash yarn
-yarn global upgrade mintlify
-```
-
-</CodeGroup>
-
-## Validating Links
-
-The CLI can assist with validating reference links made in your documentation. To identify any broken links, use the following command:
-
-```bash
-mintlify broken-links
-```
-
-## Deployment
-
-<Tip>
-  Unlimited editors available under the [Pro
-  Plan](https://mintlify.com/pricing) and above.
-</Tip>
-
-If the deployment is successful, you should see the following:
-
-<Frame>
-  <img src="/images/checks-passed.png" style={{ borderRadius: '0.5rem' }} />
-</Frame>
-
-## Code Formatting
-
-We suggest using extensions on your IDE to recognize and format MDX. If you're a VSCode user, consider the [MDX VSCode extension](https://marketplace.visualstudio.com/items?itemName=unifiedjs.vscode-mdx) for syntax highlighting, and [Prettier](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode) for code formatting.
-
-## Troubleshooting
-
-<AccordionGroup>
-  <Accordion title='Error: Could not load the "sharp" module using the darwin-arm64 runtime'>
-
-    This may be due to an outdated version of node. Try the following:
-    1. Remove the currently-installed version of mintlify: `npm remove -g mintlify`
-    2. Upgrade to Node v19 or higher.
-    3. Reinstall mintlify: `npm install -g mintlify`
-  </Accordion>
-
-  <Accordion title="Issue: Encountering an unknown error">
-  
-    Solution: Go to the root of your device and delete the \~/.mintlify folder. Afterwards, run `mintlify dev` again.
-  </Accordion>
-</AccordionGroup>
-
-Curious about what changed in the CLI version? [Check out the CLI changelog.](https://www.npmjs.com/package/mintlify?activeTab=versions)
+A local preview will be available at `http://localhost:3000`.

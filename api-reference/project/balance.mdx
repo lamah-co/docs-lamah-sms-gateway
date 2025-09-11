@@ -1,0 +1,475 @@
+---
+title: 'Get Project Balance'
+description: 'Retrieve current account balance and billing information'
+---
+
+## Overview
+
+Retrieve SMS and OTP balances and feature limits for your project.
+
+## Endpoint
+
+<CodeGroup>
+
+```bash cURL
+curl --request GET \
+  "https://sms.lamah.com/api/project/balance" \
+  --header "Authorization: Bearer YOUR_API_TOKEN"
+```
+
+```javascript JavaScript
+const response = await fetch('https://sms.lamah.com/api/project/balance', {
+  method: 'GET',
+  headers: {
+    'Authorization': 'Bearer YOUR_API_TOKEN',
+    'Accept': 'application/json'
+  }
+});
+
+const data = await response.json();
+console.log(data);
+```
+
+```python Python
+import requests
+
+url = "https://sms.lamah.com/api/project/balance"
+headers = {
+    "Authorization": "Bearer YOUR_API_TOKEN",
+    "Accept": "application/json"
+}
+
+response = requests.get(url, headers=headers)
+print(response.json())
+```
+
+```php PHP
+<?php
+$curl = curl_init();
+
+curl_setopt_array($curl, array(
+  CURLOPT_URL => 'https://sms.lamah.com/api/project/balance',
+  CURLOPT_RETURNTRANSFER => true,
+  CURLOPT_HTTPHEADER => array(
+    'Authorization: Bearer YOUR_API_TOKEN',
+    'Accept: application/json'
+  ),
+));
+
+$response = curl_exec($curl);
+curl_close($curl);
+echo $response;
+?>
+```
+
+</CodeGroup>
+
+## Response
+
+### Success Response (200 OK)
+
+```json
+{
+  "SMS": { "balance": 980, "limit": 1000 },
+  "OTP": { "balance": 120, "limit": 200 }
+}
+```
+
+### Response Fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `SMS.balance` | number | Remaining SMS credits or parts available |
+| `SMS.limit` | number | SMS monthly/project limit |
+| `OTP.balance` | number | Remaining OTP credits |
+| `OTP.limit` | number | OTP plan limit |
+
+### Payment Methods Array
+
+Each payment method object contains:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `type` | string | Payment type: `wallet` or `subscription` |
+| `balance` | number | Available balance (wallet only) |
+| `remaining_sms` | integer | Remaining SMS credits (subscription only) |
+| `total_sms` | integer | Total SMS in plan (subscription only) |
+| `status` | string | Status: `active`, `inactive`, `expired` |
+| `renewal_date` | string | Next renewal date (subscription only) |
+
+### Recent Transactions Array
+
+Each transaction object contains:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `transaction_id` | string | Unique transaction identifier |
+| `type` | string | Transaction type |
+| `amount` | number | Transaction amount (negative for charges) |
+| `description` | string | Human-readable description |
+| `timestamp` | string | When the transaction occurred |
+| `message_id` | string | Related message ID (for SMS charges) |
+| `payment_method` | string | Payment method used (for top-ups) |
+
+### Transaction Types
+
+| Type | Description |
+|------|-------------|
+| `sms_charge` | Charge for sending SMS |
+| `otp_charge` | Charge for OTP service |
+| `top_up` | Manual balance top-up |
+| `auto_recharge` | Automatic balance recharge |
+| `refund` | Refund for failed messages |
+| `adjustment` | Manual balance adjustment |
+
+## Error Responses
+
+### 401 Unauthorized
+
+```json
+{ "message": "Unauthenticated." }
+```
+
+### 403 Forbidden
+
+```json
+{ "message": "Forbidden" }
+```
+
+## Use Cases
+
+<CardGroup cols={2}>
+  <Card title="Balance Monitoring" icon="wallet">
+    Monitor account balance to ensure uninterrupted service
+  </Card>
+  <Card title="Cost Tracking" icon="chart-line">
+    Track SMS costs and usage patterns
+  </Card>
+  <Card title="Billing Integration" icon="credit-card">
+    Integrate balance information into billing systems
+  </Card>
+  <Card title="Auto-Recharge Setup" icon="refresh">
+    Configure automatic balance top-ups
+  </Card>
+</CardGroup>
+
+## Implementation Examples
+
+### Balance Monitoring
+
+<CodeGroup>
+
+```javascript Balance Monitor
+class BalanceMonitor {
+  constructor(apiToken, lowBalanceThreshold = 10) {
+    this.apiToken = apiToken;
+    this.lowBalanceThreshold = lowBalanceThreshold;
+    this.baseUrl = 'https://sms.lamah.com/api';
+  }
+
+  async checkBalance() {
+    try {
+      const response = await fetch(`${this.baseUrl}/project/balance`, {
+        headers: {
+          'Authorization': `Bearer ${this.apiToken}`,
+          'Accept': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch balance');
+      }
+
+      const balanceData = await response.json();
+      this.analyzeBalance(balanceData);
+      return balanceData;
+
+    } catch (error) {
+      console.error('Error checking balance:', error);
+      return null;
+    }
+  }
+
+  analyzeBalance(balanceData) {
+    const { current_balance, auto_recharge } = balanceData;
+
+    // Check for low balance
+    if (current_balance < this.lowBalanceThreshold) {
+      if (auto_recharge.enabled) {
+        console.log(`💡 Low balance ($${current_balance}), but auto-recharge is enabled`);
+      } else {
+        console.warn(`🚨 Low balance alert: $${current_balance}`);
+        this.sendLowBalanceAlert(current_balance);
+      }
+    }
+
+    // Check subscription usage
+    const subscription = balanceData.payment_methods.find(pm => pm.type === 'subscription');
+    if (subscription) {
+      const usagePercent = ((subscription.total_sms - subscription.remaining_sms) / subscription.total_sms) * 100;
+      
+      if (usagePercent > 90) {
+        console.warn(`🚨 Subscription usage: ${usagePercent.toFixed(1)}% used`);
+      }
+    }
+
+    return {
+      isLowBalance: current_balance < this.lowBalanceThreshold,
+      hasAutoRecharge: auto_recharge.enabled,
+      subscriptionUsage: subscription ? ((subscription.total_sms - subscription.remaining_sms) / subscription.total_sms) * 100 : 0
+    };
+  }
+
+  sendLowBalanceAlert(balance) {
+    // Implement your alert mechanism (email, webhook, etc.)
+    console.log(`Sending low balance alert: $${balance}`);
+  }
+
+  async getRecentTransactions(limit = 10) {
+    const balanceData = await this.checkBalance();
+    if (!balanceData) return [];
+
+    return balanceData.recent_transactions.slice(0, limit);
+  }
+
+  async calculateDailyCost() {
+    const balanceData = await this.checkBalance();
+    if (!balanceData) return 0;
+
+    return balanceData.usage_summary.today.total_cost;
+  }
+}
+
+// Usage
+const monitor = new BalanceMonitor('YOUR_API_TOKEN', 25);
+
+// Check balance every hour
+setInterval(async () => {
+  await monitor.checkBalance();
+}, 60 * 60 * 1000);
+
+// Get daily cost
+const dailyCost = await monitor.calculateDailyCost();
+console.log(`Today's SMS cost: $${dailyCost}`);
+```
+
+```python Balance Analytics
+import requests
+from datetime import datetime, timedelta
+
+class BalanceAnalytics:
+    def __init__(self, api_token):
+        self.api_token = api_token
+        self.base_url = 'https://sms.lamah.com/api'
+        self.headers = {
+            'Authorization': f'Bearer {api_token}',
+            'Accept': 'application/json'
+        }
+
+    def get_balance_info(self):
+        try:
+            response = requests.get(
+                f'{self.base_url}/project/balance',
+                headers=self.headers
+            )
+            
+            if not response.ok:
+                raise Exception('Failed to fetch balance')
+            
+            return response.json()
+            
+        except Exception as error:
+            print(f"Error fetching balance: {error}")
+            return None
+
+    def analyze_spending_pattern(self):
+        balance_data = self.get_balance_info()
+        if not balance_data:
+            return
+
+        transactions = balance_data['recent_transactions']
+        
+        # Filter SMS charges from last 7 days
+        seven_days_ago = datetime.now() - timedelta(days=7)
+        sms_charges = []
+        
+        for txn in transactions:
+            if txn['type'] == 'sms_charge':
+                txn_date = datetime.fromisoformat(txn['timestamp'].replace('Z', '+00:00'))
+                if txn_date >= seven_days_ago:
+                    sms_charges.append(txn)
+        
+        if sms_charges:
+            total_cost = sum(abs(txn['amount']) for txn in sms_charges)
+            avg_cost_per_sms = total_cost / len(sms_charges)
+            
+            print(f"Last 7 days SMS analysis:")
+            print(f"Total SMS sent: {len(sms_charges)}")
+            print(f"Total cost: ${total_cost:.2f}")
+            print(f"Average cost per SMS: ${avg_cost_per_sms:.4f}")
+            
+            # Predict monthly cost
+            daily_avg = total_cost / 7
+            monthly_prediction = daily_avg * 30
+            print(f"Predicted monthly cost: ${monthly_prediction:.2f}")
+        
+        return {
+            'sms_count': len(sms_charges),
+            'total_cost': total_cost if sms_charges else 0,
+            'avg_cost_per_sms': avg_cost_per_sms if sms_charges else 0
+        }
+
+    def check_auto_recharge_status(self):
+        balance_data = self.get_balance_info()
+        if not balance_data:
+            return
+
+        auto_recharge = balance_data['auto_recharge']
+        current_balance = balance_data['current_balance']
+        
+        print(f"Auto-recharge status: {'Enabled' if auto_recharge['enabled'] else 'Disabled'}")
+        
+        if auto_recharge['enabled']:
+            print(f"Threshold: ${auto_recharge['threshold']}")
+            print(f"Recharge amount: ${auto_recharge['amount']}")
+            print(f"Payment method: {auto_recharge['payment_method']}")
+            
+            if current_balance <= auto_recharge['threshold']:
+                print("⚠️ Balance is at or below auto-recharge threshold")
+        else:
+            print("💡 Consider enabling auto-recharge to avoid service interruption")
+
+# Usage
+analytics = BalanceAnalytics('YOUR_API_TOKEN')
+analytics.analyze_spending_pattern()
+analytics.check_auto_recharge_status()
+```
+
+</CodeGroup>
+
+### Cost Tracking Dashboard
+
+<CodeGroup>
+
+```javascript Cost Dashboard
+const createCostDashboard = async (apiToken) => {
+  try {
+    const response = await fetch('https://sms.lamah.com/api/project/balance', {
+      headers: {
+        'Authorization': `Bearer ${apiToken}`,
+        'Accept': 'application/json'
+      }
+    });
+
+    const balanceData = await response.json();
+    
+    // Update dashboard elements
+    document.getElementById('current-balance').textContent = `$${balanceData.current_balance}`;
+    document.getElementById('today-cost').textContent = `$${balanceData.usage_summary.today.total_cost}`;
+    document.getElementById('month-cost').textContent = `$${balanceData.usage_summary.this_month.total_cost}`;
+    
+    // Update subscription info if available
+    const subscription = balanceData.payment_methods.find(pm => pm.type === 'subscription');
+    if (subscription) {
+      const usagePercent = ((subscription.total_sms - subscription.remaining_sms) / subscription.total_sms) * 100;
+      document.getElementById('subscription-usage').textContent = `${usagePercent.toFixed(1)}%`;
+      document.getElementById('remaining-sms').textContent = subscription.remaining_sms;
+    }
+    
+    // Render recent transactions
+    renderTransactions(balanceData.recent_transactions);
+    
+  } catch (error) {
+    console.error('Failed to load cost dashboard:', error);
+  }
+};
+
+const renderTransactions = (transactions) => {
+  const container = document.getElementById('transactions-list');
+  container.innerHTML = '';
+  
+  transactions.slice(0, 5).forEach(txn => {
+    const div = document.createElement('div');
+    div.className = 'transaction-item';
+    
+    const amount = txn.amount > 0 ? `+$${txn.amount}` : `-$${Math.abs(txn.amount)}`;
+    const amountClass = txn.amount > 0 ? 'positive' : 'negative';
+    
+    div.innerHTML = `
+      <div class="transaction-description">${txn.description}</div>
+      <div class="transaction-amount ${amountClass}">${amount}</div>
+      <div class="transaction-date">${new Date(txn.timestamp).toLocaleDateString()}</div>
+    `;
+    
+    container.appendChild(div);
+  });
+};
+
+// Load dashboard on page load
+document.addEventListener('DOMContentLoaded', () => {
+  createCostDashboard('YOUR_API_TOKEN');
+});
+```
+
+</CodeGroup>
+
+## Best Practices
+
+<CardGroup cols={2}>
+  <Card title="Regular Monitoring" icon="clock">
+    Check balance regularly to avoid service interruption
+  </Card>
+  <Card title="Set Up Alerts" icon="bell">
+    Configure low balance alerts and auto-recharge
+  </Card>
+  <Card title="Track Spending" icon="chart-bar">
+    Monitor spending patterns to optimize costs
+  </Card>
+  <Card title="Backup Payment" icon="credit-card">
+    Have backup payment methods configured
+  </Card>
+</CardGroup>
+
+### Balance Alerts
+
+```javascript
+const setupBalanceAlerts = (apiToken, alertThreshold = 20) => {
+  const checkAndAlert = async () => {
+    try {
+      const response = await fetch('https://sms.lamah.com/api/project/balance', {
+        headers: {
+          'Authorization': `Bearer ${apiToken}`,
+          'Accept': 'application/json'
+        }
+      });
+
+      const balanceData = await response.json();
+      
+      if (balanceData.current_balance < alertThreshold) {
+        // Send alert (implement your preferred method)
+        console.warn(`🚨 Low balance: $${balanceData.current_balance}`);
+        
+        // Example: Send webhook notification
+        await fetch('https://your-app.com/webhooks/low-balance', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            balance: balanceData.current_balance,
+            threshold: alertThreshold,
+            timestamp: new Date().toISOString()
+          })
+        });
+      }
+      
+    } catch (error) {
+      console.error('Balance check failed:', error);
+    }
+  };
+
+  // Check every 30 minutes
+  setInterval(checkAndAlert, 30 * 60 * 1000);
+  
+  // Initial check
+  checkAndAlert();
+};
+```

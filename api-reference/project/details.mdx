@@ -1,0 +1,398 @@
+---
+title: 'Get Project Details'
+description: 'Retrieve detailed information about your project'
+---
+
+## Overview
+
+Retrieve basic information about your project and its active subscriptions.
+
+## Endpoint
+
+<CodeGroup>
+
+```bash cURL
+curl --request GET \
+  "https://sms.lamah.com/api/project/details" \
+  --header "Authorization: Bearer YOUR_API_TOKEN"
+```
+
+```javascript JavaScript
+const response = await fetch('https://sms.lamah.com/api/project/details', {
+  method: 'GET',
+  headers: {
+    'Authorization': 'Bearer YOUR_API_TOKEN',
+    'Accept': 'application/json'
+  }
+});
+
+const data = await response.json();
+console.log(data);
+```
+
+```python Python
+import requests
+
+url = "https://sms.lamah.com/api/project/details"
+headers = {
+    "Authorization": "Bearer YOUR_API_TOKEN",
+    "Accept": "application/json"
+}
+
+response = requests.get(url, headers=headers)
+print(response.json())
+```
+
+```php PHP
+<?php
+$curl = curl_init();
+
+curl_setopt_array($curl, array(
+  CURLOPT_URL => 'https://sms.lamah.com/api/project/details',
+  CURLOPT_RETURNTRANSFER => true,
+  CURLOPT_HTTPHEADER => array(
+    'Authorization: Bearer YOUR_API_TOKEN',
+    'Accept: application/json'
+  ),
+));
+
+$response = curl_exec($curl);
+curl_close($curl);
+echo $response;
+?>
+```
+
+</CodeGroup>
+
+## Response
+
+### Success Response (200 OK)
+
+```json
+{
+  "project_name": "RealEstate SMS",
+  "description": "Property notifications and OTPs",
+  "company": "Lamah Co",
+  "status": "active",
+  "type": "production",
+  "subscription": [
+    {
+      "plan_name": "Business",
+      "started_at": "2024-01-01T00:00:00Z",
+      "expired_at": "2024-12-31T23:59:59Z",
+      "status": "active"
+    }
+  ]
+}
+```
+
+### Response Fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `project_name` | string | Project name |
+| `description` | string | Project description |
+| `company` | string | Company name |
+| `status` | string | Project status |
+| `type` | string | Project type |
+| `subscription` | array | Active subscriptions with plan information |
+
+### Subscription Array Items
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `plan_name` | string | Plan name for this subscription |
+| `started_at` | string | Start date of subscription |
+| `expired_at` | string | Expiration date |
+| `status` | string | Subscription status |
+
+## Error Responses
+
+### 401 Unauthorized
+
+```json
+{ "message": "Unauthenticated." }
+```
+
+### 403 Forbidden
+
+```json
+{ "message": "Forbidden" }
+```
+
+### 404 Not Found
+
+```json
+{ "message": "Not Found" }
+```
+
+## Use Cases
+
+<CardGroup cols={2}>
+  <Card title="Dashboard Overview" icon="chart-line">
+    Display project statistics and usage in your dashboard
+  </Card>
+  <Card title="Usage Monitoring" icon="gauge">
+    Monitor API usage and SMS consumption
+  </Card>
+  <Card title="Billing Information" icon="credit-card">
+    Check subscription status and billing details
+  </Card>
+  <Card title="Configuration Check" icon="cog">
+    Verify project settings and limits
+  </Card>
+</CardGroup>
+
+## Implementation Examples
+
+### Dashboard Integration
+
+<CodeGroup>
+
+```javascript Dashboard Component
+class ProjectDashboard {
+  constructor(apiToken) {
+    this.apiToken = apiToken;
+    this.baseUrl = 'https://sms.lamah.com/api';
+  }
+
+  async loadProjectDetails() {
+    try {
+      const response = await fetch(`${this.baseUrl}/project/details`, {
+        headers: {
+          'Authorization': `Bearer ${this.apiToken}`,
+          'Accept': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to load project details');
+      }
+
+      const project = await response.json();
+      this.renderDashboard(project);
+      return project;
+
+    } catch (error) {
+      console.error('Error loading project details:', error);
+      this.showError('Failed to load project information');
+    }
+  }
+
+  renderDashboard(project) {
+    // Update dashboard elements
+    document.getElementById('project-name').textContent = project.name;
+    document.getElementById('project-status').textContent = project.status;
+    
+    // Usage statistics
+    const monthlyUsage = project.usage.current_month;
+    document.getElementById('monthly-sent').textContent = monthlyUsage.sms_sent;
+    document.getElementById('monthly-delivered').textContent = monthlyUsage.sms_delivered;
+    document.getElementById('monthly-cost').textContent = `$${monthlyUsage.total_cost}`;
+    
+    // Limits and progress
+    const smsUsagePercent = (monthlyUsage.sms_sent / project.limits.monthly_sms_limit) * 100;
+    document.getElementById('sms-usage-bar').style.width = `${smsUsagePercent}%`;
+    document.getElementById('sms-usage-text').textContent = 
+      `${monthlyUsage.sms_sent} / ${project.limits.monthly_sms_limit} SMS`;
+    
+    // Subscription info
+    document.getElementById('plan-name').textContent = project.subscription.plan_name;
+    document.getElementById('next-billing').textContent = 
+      new Date(project.subscription.next_billing_date).toLocaleDateString();
+  }
+
+  showError(message) {
+    document.getElementById('error-message').textContent = message;
+    document.getElementById('error-banner').style.display = 'block';
+  }
+}
+
+// Usage
+const dashboard = new ProjectDashboard('YOUR_API_TOKEN');
+dashboard.loadProjectDetails();
+```
+
+```python Analytics Script
+import requests
+from datetime import datetime
+
+class ProjectAnalytics:
+    def __init__(self, api_token):
+        self.api_token = api_token
+        self.base_url = 'https://sms.lamah.com/api'
+        self.headers = {
+            'Authorization': f'Bearer {api_token}',
+            'Accept': 'application/json'
+        }
+
+    def get_project_details(self):
+        try:
+            response = requests.get(
+                f'{self.base_url}/project/details',
+                headers=self.headers
+            )
+            
+            if not response.ok:
+                raise Exception('Failed to load project details')
+            
+            return response.json()
+            
+        except Exception as error:
+            print(f"Error loading project details: {error}")
+            return None
+
+    def analyze_usage(self):
+        project = self.get_project_details()
+        if not project:
+            return
+        
+        monthly_usage = project['usage']['current_month']
+        limits = project['limits']
+        
+        # Calculate usage percentages
+        sms_usage_percent = (monthly_usage['sms_sent'] / limits['monthly_sms_limit']) * 100
+        delivery_rate = (monthly_usage['sms_delivered'] / monthly_usage['sms_sent']) * 100 if monthly_usage['sms_sent'] > 0 else 0
+        
+        print(f"Project: {project['name']}")
+        print(f"Status: {project['status']}")
+        print(f"Plan: {project['subscription']['plan_name']}")
+        print(f"\nUsage Analysis:")
+        print(f"SMS Usage: {monthly_usage['sms_sent']:,} / {limits['monthly_sms_limit']:,} ({sms_usage_percent:.1f}%)")
+        print(f"Delivery Rate: {delivery_rate:.1f}%")
+        print(f"Monthly Cost: ${monthly_usage['total_cost']:.2f}")
+        
+        # Warnings
+        if sms_usage_percent > 80:
+            print("⚠️  Warning: Approaching monthly SMS limit")
+        
+        if delivery_rate < 95:
+            print("⚠️  Warning: Low delivery rate detected")
+        
+        return {
+            'sms_usage_percent': sms_usage_percent,
+            'delivery_rate': delivery_rate,
+            'monthly_cost': monthly_usage['total_cost']
+        }
+
+# Usage
+analytics = ProjectAnalytics('YOUR_API_TOKEN')
+analytics.analyze_usage()
+```
+
+</CodeGroup>
+
+### Usage Monitoring
+
+<CodeGroup>
+
+```javascript Usage Alerts
+const checkUsageLimits = async (apiToken) => {
+  try {
+    const response = await fetch('https://sms.lamah.com/api/project/details', {
+      headers: {
+        'Authorization': `Bearer ${apiToken}`,
+        'Accept': 'application/json'
+      }
+    });
+
+    const project = await response.json();
+    const monthlyUsage = project.usage.current_month;
+    const limits = project.limits;
+
+    // Check SMS usage
+    const smsUsagePercent = (monthlyUsage.sms_sent / limits.monthly_sms_limit) * 100;
+    
+    if (smsUsagePercent > 90) {
+      console.warn('🚨 Critical: 90% of monthly SMS limit reached');
+      // Send alert to admin
+    } else if (smsUsagePercent > 75) {
+      console.warn('⚠️ Warning: 75% of monthly SMS limit reached');
+    }
+
+    // Check delivery rate
+    const deliveryRate = (monthlyUsage.sms_delivered / monthlyUsage.sms_sent) * 100;
+    
+    if (deliveryRate < 95) {
+      console.warn(`⚠️ Low delivery rate: ${deliveryRate.toFixed(1)}%`);
+    }
+
+    return {
+      smsUsagePercent,
+      deliveryRate,
+      withinLimits: smsUsagePercent < 90 && deliveryRate >= 95
+    };
+
+  } catch (error) {
+    console.error('Failed to check usage limits:', error);
+    return null;
+  }
+};
+
+// Run every hour
+setInterval(() => {
+  checkUsageLimits('YOUR_API_TOKEN');
+}, 60 * 60 * 1000);
+```
+
+</CodeGroup>
+
+## Best Practices
+
+<CardGroup cols={2}>
+  <Card title="Cache Results" icon="database">
+    Cache project details to reduce API calls
+  </Card>
+  <Card title="Monitor Usage" icon="chart-line">
+    Regularly check usage to avoid hitting limits
+  </Card>
+  <Card title="Handle Errors" icon="shield">
+    Implement proper error handling for API failures
+  </Card>
+  <Card title="Update Settings" icon="cog">
+    Keep project settings updated through the dashboard
+  </Card>
+</CardGroup>
+
+### Caching Strategy
+
+```javascript
+class ProjectDetailsCache {
+  constructor(apiToken, cacheTimeMs = 5 * 60 * 1000) { // 5 minutes
+    this.apiToken = apiToken;
+    this.cacheTimeMs = cacheTimeMs;
+    this.cache = null;
+    this.lastFetch = null;
+  }
+
+  async getProjectDetails(forceRefresh = false) {
+    const now = Date.now();
+    
+    if (!forceRefresh && this.cache && this.lastFetch && 
+        (now - this.lastFetch) < this.cacheTimeMs) {
+      return this.cache;
+    }
+
+    try {
+      const response = await fetch('https://sms.lamah.com/api/project/details', {
+        headers: {
+          'Authorization': `Bearer ${this.apiToken}`,
+          'Accept': 'application/json'
+        }
+      });
+
+      const project = await response.json();
+      
+      this.cache = project;
+      this.lastFetch = now;
+      
+      return project;
+
+    } catch (error) {
+      console.error('Failed to fetch project details:', error);
+      // Return cached data if available
+      return this.cache;
+    }
+  }
+}
+```

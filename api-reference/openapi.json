@@ -1,94 +1,481 @@
 {
-  "openapi": "3.1.0",
+  "openapi": "3.0.3",
   "info": {
-    "title": "OpenAPI Plant Store",
-    "description": "A sample API that uses a plant store as an example to demonstrate features in the OpenAPI specification",
-    "license": {
-      "name": "MIT"
-    },
+    "title": "Ersaal",
+    "description": "",
     "version": "1.0.0"
   },
   "servers": [
     {
-      "url": "http://sandbox.mintlify.com"
+      "url": "https://sms.lamah.com"
     }
   ],
+  "tags": [
+    {
+      "name": "Contact Us",
+      "description": ""
+    },
+    {
+      "name": "Endpoints",
+      "description": ""
+    },
+    {
+      "name": "OTP",
+      "description": ""
+    },
+    {
+      "name": "Plan",
+      "description": ""
+    },
+    {
+      "name": "Project",
+      "description": ""
+    },
+    {
+      "name": "SMS",
+      "description": ""
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "default": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "You can retrieve your token by following these steps:\n    <ul>\n        <li>Visit your dashboard and navigate to the <b>Projects</b> section.</li>\n        <li>Create a new project or select an existing one.</li>\n        <li>Locate and copy the <b>API token</b> provided in the project details.</li>\n    </ul>"
+      }
+    }
+  },
   "security": [
     {
-      "bearerAuth": []
+      "default": []
     }
   ],
   "paths": {
-    "/plants": {
-      "get": {
-        "description": "Returns all plants from the system that the user has access to",
-        "parameters": [
-          {
-            "name": "limit",
-            "in": "query",
-            "description": "The maximum number of results to return",
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          }
-        ],
+    "/api/contact-us": {
+      "post": {
+        "summary": "",
+        "operationId": "postApiContactUs",
+        "description": "",
+        "parameters": [],
         "responses": {
           "200": {
-            "description": "Plant response",
+            "description": "",
             "content": {
-              "application/json": {
+              "text/plain": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/Plant"
+                  "type": "string",
+                  "example": "json {\"message\": \"string\"}"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Contact Us"
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "required",
+                    "description": "string",
+                    "example": "mollitia",
+                    "nullable": false
+                  },
+                  "phone": {
+                    "type": "required",
+                    "description": "string",
+                    "example": "iusto",
+                    "nullable": false
+                  },
+                  "subject": {
+                    "type": "required",
+                    "description": "string",
+                    "example": "numquam",
+                    "nullable": false
+                  },
+                  "email": {
+                    "type": "required",
+                    "description": "string",
+                    "example": "isabella65@example.org",
+                    "nullable": false
+                  },
+                  "message": {
+                    "type": "required",
+                    "description": "string",
+                    "example": "beatae",
+                    "nullable": false
                   }
                 }
               }
             }
-          },
-          "400": {
-            "description": "Unexpected error",
+          }
+        }
+      }
+    },
+    "/api/faq": {
+      "get": {
+        "summary": "",
+        "operationId": "getApiFaq",
+        "description": "",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Error"
+                  "type": "object",
+                  "example": {
+                    "data": [
+                      {
+                        "question": "كيف يمكنني الاشتراك؟",
+                        "answer": "للاشتراك في الخدمة، قم بزيارة موقع  وانقر على زر 'التسجيل'. املأ نموذج التسجيل بتفاصيلك، واختر خطة الاشتراك التي تناسب احتياجاتك، وأكمل عملية الدفع. بمجرد الانتهاء، ستتلقى رسالة تأكيد عبر البريد الإلكتروني للبدء!"
+                      }
+                    ]
+                  },
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "example": [
+                        {
+                          "question": "كيف يمكنني الاشتراك؟",
+                          "answer": "للاشتراك في الخدمة، قم بزيارة موقع  وانقر على زر 'التسجيل'. املأ نموذج التسجيل بتفاصيلك، واختر خطة الاشتراك التي تناسب احتياجاتك، وأكمل عملية الدفع. بمجرد الانتهاء، ستتلقى رسالة تأكيد عبر البريد الإلكتروني للبدء!"
+                        }
+                      ],
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "question": {
+                            "type": "string",
+                            "example": "كيف يمكنني الاشتراك؟"
+                          },
+                          "answer": {
+                            "type": "string",
+                            "example": "للاشتراك في الخدمة، قم بزيارة موقع  وانقر على زر 'التسجيل'. املأ نموذج التسجيل بتفاصيلك، واختر خطة الاشتراك التي تناسب احتياجاتك، وأكمل عملية الدفع. بمجرد الانتهاء، ستتلقى رسالة تأكيد عبر البريد الإلكتروني للبدء!"
+                          }
+                        }
+                      }
+                    }
+                  }
                 }
               }
             }
           }
-        }
-      },
-      "post": {
-        "description": "Creates a new plant in the store",
-        "requestBody": {
-          "description": "Plant to add to the store",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/NewPlant"
-              }
-            }
-          },
-          "required": true
         },
+        "tags": [
+          "Endpoints"
+        ]
+      }
+    },
+    "/api/cities": {
+      "get": {
+        "summary": "",
+        "operationId": "getApiCities",
+        "description": "",
+        "parameters": [],
         "responses": {
           "200": {
-            "description": "plant response",
+            "description": "",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Plant"
+                  "type": "object",
+                  "example": {
+                    "data": [
+                      {
+                        "name": "مصراتة",
+                        "description": null
+                      },
+                      {
+                        "name": "طرابلس",
+                        "description": null
+                      },
+                      {
+                        "name": "الزنتان",
+                        "description": null
+                      },
+                      {
+                        "name": "الزاوية",
+                        "description": null
+                      },
+                      {
+                        "name": "الخمس",
+                        "description": null
+                      },
+                      {
+                        "name": "زوارة",
+                        "description": null
+                      },
+                      {
+                        "name": "ترهونة",
+                        "description": null
+                      },
+                      {
+                        "name": "العزيزية",
+                        "description": null
+                      },
+                      {
+                        "name": "غريان",
+                        "description": null
+                      },
+                      {
+                        "name": "بنغازي",
+                        "description": null
+                      },
+                      {
+                        "name": "البيضاء",
+                        "description": null
+                      },
+                      {
+                        "name": "درنة",
+                        "description": null
+                      },
+                      {
+                        "name": "طبرق",
+                        "description": null
+                      },
+                      {
+                        "name": "اجدابيا",
+                        "description": null
+                      },
+                      {
+                        "name": "المرج",
+                        "description": null
+                      },
+                      {
+                        "name": "شحات",
+                        "description": null
+                      },
+                      {
+                        "name": "سرت",
+                        "description": null
+                      },
+                      {
+                        "name": "سبها",
+                        "description": null
+                      },
+                      {
+                        "name": "مرزق",
+                        "description": null
+                      },
+                      {
+                        "name": "أوباري",
+                        "description": null
+                      },
+                      {
+                        "name": "غات",
+                        "description": null
+                      },
+                      {
+                        "name": "براك الشاطئ",
+                        "description": null
+                      },
+                      {
+                        "name": "القطرون",
+                        "description": null
+                      },
+                      {
+                        "name": "نالوت",
+                        "description": null
+                      }
+                    ]
+                  },
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "example": [
+                        {
+                          "name": "مصراتة",
+                          "description": null
+                        },
+                        {
+                          "name": "طرابلس",
+                          "description": null
+                        },
+                        {
+                          "name": "الزنتان",
+                          "description": null
+                        },
+                        {
+                          "name": "الزاوية",
+                          "description": null
+                        },
+                        {
+                          "name": "الخمس",
+                          "description": null
+                        },
+                        {
+                          "name": "زوارة",
+                          "description": null
+                        },
+                        {
+                          "name": "ترهونة",
+                          "description": null
+                        },
+                        {
+                          "name": "العزيزية",
+                          "description": null
+                        },
+                        {
+                          "name": "غريان",
+                          "description": null
+                        },
+                        {
+                          "name": "بنغازي",
+                          "description": null
+                        },
+                        {
+                          "name": "البيضاء",
+                          "description": null
+                        },
+                        {
+                          "name": "درنة",
+                          "description": null
+                        },
+                        {
+                          "name": "طبرق",
+                          "description": null
+                        },
+                        {
+                          "name": "اجدابيا",
+                          "description": null
+                        },
+                        {
+                          "name": "المرج",
+                          "description": null
+                        },
+                        {
+                          "name": "شحات",
+                          "description": null
+                        },
+                        {
+                          "name": "سرت",
+                          "description": null
+                        },
+                        {
+                          "name": "سبها",
+                          "description": null
+                        },
+                        {
+                          "name": "مرزق",
+                          "description": null
+                        },
+                        {
+                          "name": "أوباري",
+                          "description": null
+                        },
+                        {
+                          "name": "غات",
+                          "description": null
+                        },
+                        {
+                          "name": "براك الشاطئ",
+                          "description": null
+                        },
+                        {
+                          "name": "القطرون",
+                          "description": null
+                        },
+                        {
+                          "name": "نالوت",
+                          "description": null
+                        }
+                      ],
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "name": {
+                            "type": "string",
+                            "example": "مصراتة"
+                          },
+                          "description": {
+                            "type": "string",
+                            "example": null
+                          }
+                        }
+                      }
+                    }
+                  }
                 }
               }
             }
-          },
-          "400": {
-            "description": "unexpected error",
+          }
+        },
+        "tags": [
+          "Endpoints"
+        ]
+      }
+    },
+    "/api/otp/initiate": {
+      "post": {
+        "summary": "",
+        "operationId": "postApiOtpInitiate",
+        "description": "",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
             "content": {
-              "application/json": {
+              "text/plain": {
                 "schema": {
-                  "$ref": "#/components/schemas/Error"
+                  "type": "string",
+                  "example": "json {\"request_id\": \"string\", \"cost\": int}"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "OTP"
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "lang": {
+                    "type": "required",
+                    "description": "string [ar, en]",
+                    "example": "repellendus",
+                    "nullable": false
+                  },
+                  "length": {
+                    "type": "required",
+                    "description": "int [4, 6]",
+                    "example": "velit",
+                    "nullable": false
+                  },
+                  "expiration": {
+                    "type": "required",
+                    "description": "int between 1 and 10 minutes",
+                    "example": "sed",
+                    "nullable": false
+                  },
+                  "sender": {
+                    "type": "required",
+                    "description": "string",
+                    "example": "sunt",
+                    "nullable": false
+                  },
+                  "payment_type": {
+                    "type": "required",
+                    "description": "string [wallet, subscription]",
+                    "example": "id",
+                    "nullable": false
+                  },
+                  "receiver": {
+                    "type": "required",
+                    "description": "phone number",
+                    "example": "velit",
+                    "nullable": false
+                  }
                 }
               }
             }
@@ -96,122 +483,657 @@
         }
       }
     },
-    "/plants/{id}": {
-      "delete": {
-        "description": "Deletes a single plant based on the ID supplied",
+    "/api/otp/verify": {
+      "post": {
+        "summary": "",
+        "operationId": "postApiOtpVerify",
+        "description": "",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "json {\"message\": \"string\"}"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "OTP"
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "request_id": {
+                    "type": "required",
+                    "description": "string",
+                    "example": "molestiae",
+                    "nullable": false
+                  },
+                  "code": {
+                    "type": "required",
+                    "description": "string",
+                    "example": "deserunt",
+                    "nullable": false
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/plans": {
+      "get": {
+        "summary": "",
+        "operationId": "getApiPlans",
+        "description": "",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "json"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Plan"
+        ],
+        "security": []
+      }
+    },
+    "/api/project/details": {
+      "get": {
+        "summary": "",
+        "operationId": "getApiProjectDetails",
+        "description": "",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "json"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Project"
+        ]
+      }
+    },
+    "/api/project/balance": {
+      "get": {
+        "summary": "",
+        "operationId": "getApiProjectBalance",
+        "description": "",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "json"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Project"
+        ]
+      }
+    },
+    "/api/project/contacts/{group_id}": {
+      "get": {
+        "summary": "",
+        "operationId": "getApiProjectContactsGroup_id",
+        "description": "",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "json"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Project"
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "page": {
+                    "type": "integer",
+                    "description": "nullable",
+                    "example": 2,
+                    "nullable": true
+                  },
+                  "per_page": {
+                    "type": "integer",
+                    "description": "nullable",
+                    "example": 1,
+                    "nullable": true
+                  },
+                  "from": {
+                    "type": "date",
+                    "description": "nullable",
+                    "example": "incidunt",
+                    "nullable": true
+                  },
+                  "to": {
+                    "type": "date",
+                    "description": "nullable",
+                    "example": "quod",
+                    "nullable": true
+                  },
+                  "group_id": {
+                    "type": "string",
+                    "description": "validation.uuid.",
+                    "example": "ae3287b0-267e-3858-8520-d8111b8fa19c",
+                    "nullable": true
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "parameters": [
+        {
+          "in": "path",
+          "name": "group_id",
+          "description": "The ID of the group.",
+          "example": "vero",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ]
+    },
+    "/api/project/consumptions": {
+      "get": {
+        "summary": "",
+        "operationId": "getApiProjectConsumptions",
+        "description": "",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "json"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Project"
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "page": {
+                    "type": "integer",
+                    "description": "nullable",
+                    "example": 1,
+                    "nullable": true
+                  },
+                  "per_page": {
+                    "type": "integer",
+                    "description": "nullable",
+                    "example": 9,
+                    "nullable": true
+                  },
+                  "from": {
+                    "type": "date",
+                    "description": "nullable",
+                    "example": "dolorem",
+                    "nullable": true
+                  },
+                  "to": {
+                    "type": "date",
+                    "description": "nullable",
+                    "example": "praesentium",
+                    "nullable": true
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/sms/messages": {
+      "post": {
+        "summary": "",
+        "operationId": "postApiSmsMessages",
+        "description": "",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "json"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "SMS"
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "message": {
+                    "type": "required",
+                    "description": "string",
+                    "example": "nihil",
+                    "nullable": false
+                  },
+                  "sender": {
+                    "type": "required",
+                    "description": "string",
+                    "example": "voluptatem",
+                    "nullable": false
+                  },
+                  "payment_type": {
+                    "type": "required",
+                    "description": "string [wallet, subscription]",
+                    "example": "quos",
+                    "nullable": false
+                  },
+                  "receiver": {
+                    "type": "required",
+                    "description": "phone number",
+                    "example": "vero",
+                    "nullable": false
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "summary": "",
+        "operationId": "getApiSmsMessages",
+        "description": "",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "json"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "SMS"
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "page": {
+                    "type": "integer",
+                    "description": "nullable",
+                    "example": 7,
+                    "nullable": true
+                  },
+                  "per_page": {
+                    "type": "integer",
+                    "description": "nullable",
+                    "example": 2,
+                    "nullable": true
+                  },
+                  "from": {
+                    "type": "date",
+                    "description": "nullable",
+                    "example": "et",
+                    "nullable": true
+                  },
+                  "to": {
+                    "type": "date",
+                    "description": "nullable",
+                    "example": "ad",
+                    "nullable": true
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/sms/messages/bulk": {
+      "post": {
+        "summary": "",
+        "operationId": "postApiSmsMessagesBulk",
+        "description": "",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "json"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "SMS"
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "message": {
+                    "type": "required",
+                    "description": "string",
+                    "example": "vero",
+                    "nullable": false
+                  },
+                  "sender": {
+                    "type": "required",
+                    "description": "string",
+                    "example": "odit",
+                    "nullable": false
+                  },
+                  "payment_type": {
+                    "type": "required",
+                    "description": "string [wallet, subscription]",
+                    "example": "non",
+                    "nullable": false
+                  },
+                  "receivers": {
+                    "type": "array",
+                    "description": "of phone numbers required",
+                    "example": [
+                      "quod"
+                    ],
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/sms/messages/template": {
+      "post": {
+        "summary": "",
+        "operationId": "postApiSmsMessagesTemplate",
+        "description": "",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "json"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "SMS"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "template_name": {
+                    "type": "string",
+                    "description": "",
+                    "example": "vel",
+                    "nullable": false
+                  },
+                  "sender": {
+                    "type": "required",
+                    "description": "string",
+                    "example": "nihil",
+                    "nullable": false
+                  },
+                  "payment_type": {
+                    "type": "required",
+                    "description": "string [wallet, subscription]",
+                    "example": "accusamus",
+                    "nullable": false
+                  },
+                  "receiver": {
+                    "type": "required",
+                    "description": "phone number",
+                    "example": "et",
+                    "nullable": false
+                  },
+                  "params": {
+                    "type": "array",
+                    "description": "",
+                    "example": [
+                      "iure"
+                    ],
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "template_id": {
+                    "type": "required",
+                    "description": "string",
+                    "example": "distinctio",
+                    "nullable": false
+                  }
+                },
+                "required": [
+                  "template_name",
+                  "params"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/sms/messages/contacts": {
+      "post": {
+        "summary": "",
+        "operationId": "postApiSmsMessagesContacts",
+        "description": "",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "json"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "SMS"
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "message": {
+                    "type": "required",
+                    "description": "string",
+                    "example": "dolore",
+                    "nullable": false
+                  },
+                  "sender": {
+                    "type": "required",
+                    "description": "string",
+                    "example": "exercitationem",
+                    "nullable": false
+                  },
+                  "payment_type": {
+                    "type": "required",
+                    "description": "string [wallet, subscription]",
+                    "example": "iusto",
+                    "nullable": false
+                  },
+                  "contact_group_id": {
+                    "type": "required",
+                    "description": "string uuid",
+                    "example": "porro",
+                    "nullable": false
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/sms/messages/{message_id}": {
+      "get": {
+        "summary": "",
+        "operationId": "getApiSmsMessagesMessage_id",
+        "description": "",
         "parameters": [
           {
-            "name": "id",
-            "in": "path",
-            "description": "ID of plant to delete",
+            "in": "query",
+            "name": "message_id",
+            "description": "uuid",
+            "example": "eligendi",
             "required": true,
             "schema": {
-              "type": "integer",
-              "format": "int64"
+              "type": "string",
+              "description": "uuid",
+              "example": "eligendi",
+              "nullable": false
             }
           }
         ],
         "responses": {
-          "204": {
-            "description": "Plant deleted",
-            "content": {}
-          },
-          "400": {
-            "description": "unexpected error",
+          "200": {
+            "description": "",
             "content": {
-              "application/json": {
+              "text/plain": {
                 "schema": {
-                  "$ref": "#/components/schemas/Error"
+                  "type": "string",
+                  "example": "json"
                 }
               }
             }
           }
-        }
-      }
-    }
-  },
-  "webhooks": {
-    "/plant/webhook": {
-      "post": {
-        "description": "Information about a new plant added to the store",
+        },
+        "tags": [
+          "SMS"
+        ],
         "requestBody": {
-          "description": "Plant added to the store",
+          "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/NewPlant"
+                "type": "object",
+                "properties": {
+                  "message_id": {
+                    "type": "string",
+                    "description": "validation.uuid.",
+                    "example": "024f03f0-dcd7-3216-bc51-20b5c3e5871c",
+                    "nullable": false
+                  }
+                },
+                "required": [
+                  "message_id"
+                ]
               }
             }
           }
-        },
-        "responses": {
-          "200": {
-            "description": "Return a 200 status to indicate that the data was received successfully"
-          }
-        }
-      }
-    }
-  },
-  "components": {
-    "schemas": {
-      "Plant": {
-        "required": [
-          "name"
-        ],
-        "type": "object",
-        "properties": {
-          "name": {
-            "description": "The name of the plant",
-            "type": "string"
-          },
-          "tag": {
-            "description": "Tag to specify the type",
-            "type": "string"
-          }
         }
       },
-      "NewPlant": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/Plant"
-          },
-          {
-            "required": [
-              "id"
-            ],
-            "type": "object",
-            "properties": {
-              "id": {
-                "description": "Identification number of the plant",
-                "type": "integer",
-                "format": "int64"
-              }
-            }
-          }
-        ]
-      },
-      "Error": {
-        "required": [
-          "error",
-          "message"
-        ],
-        "type": "object",
-        "properties": {
-          "error": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "message": {
+      "parameters": [
+        {
+          "in": "path",
+          "name": "message_id",
+          "description": "The ID of the message.",
+          "example": "sunt",
+          "required": true,
+          "schema": {
             "type": "string"
           }
         }
-      }
-    },
-    "securitySchemes": {
-      "bearerAuth": {
-        "type": "http",
-        "scheme": "bearer"
-      }
+      ]
     }
   }
 }

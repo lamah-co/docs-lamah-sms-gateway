@@ -17,14 +17,15 @@ curl --request POST \
   --header "Authorization: Bearer YOUR_API_TOKEN" \
   --header "Content-Type: application/json" \
   --data '{
-    "template_id": "welcome_template_123",
-    "sender": "YourApp",
+    "template_id": "property_viewing",
+    "sender": "RealEstate",
     "payment_type": "wallet",
-    "receiver": "+1234567890",
+    "receiver": "00218912345678",
     "params": [
-      "John Doe",
-      "Premium",
-      "2024-01-15"
+      { "name": "أحمد محمد" },
+      { "date": "2024-01-15" },
+      { "time": "17:00" },
+      { "area": "قرقارش" }
     ]
   }'
 ```
@@ -37,14 +38,15 @@ const response = await fetch('https://sms.lamah.com/api/sms/messages/template', 
     'Content-Type': 'application/json',
   },
   body: JSON.stringify({
-    template_id: 'welcome_template_123',
-    sender: 'YourApp',
+    template_id: 'property_viewing',
+    sender: 'RealEstate',
     payment_type: 'wallet',
-    receiver: '+1234567890',
+    receiver: '00218912345678',
     params: [
-      'John Doe',
-      'Premium',
-      '2024-01-15'
+      { name: 'أحمد محمد' },
+      { date: '2024-01-15' },
+      { time: '17:00' },
+      { area: 'قرقارش' }
     ]
   })
 });
@@ -62,14 +64,15 @@ headers = {
     "Content-Type": "application/json"
 }
 payload = {
-    "template_id": "welcome_template_123",
-    "sender": "YourApp",
+    "template_id": "property_viewing",
+    "sender": "RealEstate",
     "payment_type": "wallet",
-    "receiver": "+1234567890",
+    "receiver": "00218912345678",
     "params": [
-        "John Doe",
-        "Premium",
-        "2024-01-15"
+        {"name": "أحمد محمد"},
+        {"date": "2024-01-15"},
+        {"time": "17:00"},
+        {"area": "قرقارش"}
     ]
 }
 
@@ -86,14 +89,15 @@ curl_setopt_array($curl, array(
   CURLOPT_RETURNTRANSFER => true,
   CURLOPT_CUSTOMREQUEST => 'POST',
   CURLOPT_POSTFIELDS => json_encode([
-    'template_id' => 'welcome_template_123',
-    'sender' => 'YourApp',
+    'template_id' => 'property_viewing',
+    'sender' => 'RealEstate',
     'payment_type' => 'wallet',
-    'receiver' => '+1234567890',
+    'receiver' => '00218912345678',
     'params' => [
-      'John Doe',
-      'Premium',
-      '2024-01-15'
+      ['name' => 'أحمد محمد'],
+      ['date' => '2024-01-15'],
+      ['time' => '17:00'],
+      ['area' => 'قرقارش']
     ]
   ]),
   CURLOPT_HTTPHEADER => array(
@@ -114,11 +118,11 @@ echo $response;
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| `template_id` | string | ✅ | The ID of the template to use |
+| `template_id` | string | ✅ | The short name/ID of the template to use |
 | `sender` | string | ✅ | The sender ID (up to 11 characters) |
 | `payment_type` | string | ✅ | Payment method: `wallet` or `subscription` |
 | `receiver` | string | ✅ | The recipient's phone number in international format |
-| `params` | array | ❌ | Array of parameters to fill template placeholders |
+| `params` | array | ✅ | Array of objects mapping placeholder names to values |
 
 ### Parameter Details
 
@@ -136,7 +140,7 @@ echo $response;
     
     - **Length**: Maximum 11 characters
     - **Format**: Alphanumeric characters only
-    - **Examples**: `YourApp`, `MyCompany`, `Alert123`
+    - **Examples**: `Lamah`, `MyCompany`, `Alert123`
   </Accordion>
   
   <Accordion title="payment_type">
@@ -154,36 +158,39 @@ echo $response;
   </Accordion>
   
   <Accordion title="params">
-    Array of values to replace placeholders in the template.
+    Array of objects to replace named placeholders in the template.
     
-    - **Order**: Parameters are replaced in the order they appear in the template
-    - **Type**: All parameters are treated as strings
-    - **Optional**: Only required if template contains placeholders
-    - **Count**: Must match the number of placeholders in the template
+    - **Format**: `[{ "name": "..." }, { "date": "..." }]`
+    - **Placeholders**: Use `{{name}}`, `{{date}}` style in templates
+    - **Type**: All values are strings
+    - **Required**: Must include all placeholders present in the template
   </Accordion>
 </AccordionGroup>
 
 ## Template Format
 
-Templates use placeholder syntax with numbered parameters:
+Templates use named placeholders with double curly braces:
 
 ### Example Template
 ```
-Hello {1}, welcome to {2}! Your account expires on {3}. 
-Visit our website for more information.
+مرحباً {{name}}، تم تأكيد معاينتك للعقار يوم {{date}} الساعة {{time}} في منطقة {{area}}.
 ```
 
 ### With Parameters
 ```json
 {
-  "params": ["John Doe", "Premium Plan", "2024-01-15"]
+  "params": [
+    { "name": "أحمد محمد" },
+    { "date": "2024-01-15" },
+    { "time": "17:00" },
+    { "area": "قرقارش" }
+  ]
 }
 ```
 
 ### Resulting Message
 ```
-Hello John Doe, welcome to Premium Plan! Your account expires on 2024-01-15. 
-Visit our website for more information.
+مرحباً أحمد محمد، تم تأكيد معاينتك للعقار يوم 2024-01-15 الساعة 17:00 في منطقة قرقارش.
 ```
 
 ## Response
@@ -193,13 +200,7 @@ Visit our website for more information.
 ```json
 {
   "message_id": "msg_123456789",
-  "template_id": "welcome_template_123",
-  "status": "sent",
-  "cost": 0.05,
-  "balance_remaining": 99.95,
-  "final_message": "Hello John Doe, welcome to Premium Plan! Your account expires on 2024-01-15. Visit our website for more information.",
-  "parts": 1,
-  "encoding": "GSM7"
+  "cost": 1
 }
 ```
 
@@ -208,40 +209,21 @@ Visit our website for more information.
 | Field | Type | Description |
 |-------|------|-------------|
 | `message_id` | string | Unique identifier for the sent message |
-| `template_id` | string | ID of the template that was used |
-| `status` | string | Message status: `sent`, `pending`, `failed` |
-| `cost` | number | Cost of sending the message |
-| `balance_remaining` | number | Remaining account balance |
-| `final_message` | string | The complete message after parameter substitution |
-| `parts` | integer | Number of SMS parts |
-| `encoding` | string | Message encoding used |
+| `message_id` | string | Unique identifier for the sent message |
+| `cost` | number | Number of SMS parts charged for this send |
 
 ## Error Responses
 
 ### 400 Bad Request - Invalid Template
 
 ```json
-{
-  "error": "Template not found",
-  "code": "TEMPLATE_NOT_FOUND",
-  "details": {
-    "template_id": "invalid_template_123"
-  }
-}
+{ "message": "Template not found" }
 ```
 
 ### 400 Bad Request - Parameter Mismatch
 
 ```json
-{
-  "error": "Parameter count mismatch",
-  "code": "PARAMETER_MISMATCH",
-  "details": {
-    "expected": 3,
-    "provided": 2,
-    "template_id": "welcome_template_123"
-  }
-}
+{ "message": "Missing parameter: name" }
 ```
 
 ### 401 Unauthorized
