@@ -19,7 +19,6 @@ Setting up a proper development environment is crucial for building robust SMS a
 # .env file
 LAMAH_API_TOKEN=your_api_token_here
 LAMAH_BASE_URL=https://sms.lamah.com
-LAMAH_WEBHOOK_SECRET=your_webhook_secret
 ```
 
 ```javascript Node.js Setup
@@ -27,8 +26,7 @@ LAMAH_WEBHOOK_SECRET=your_webhook_secret
 const config = {
   lamah: {
     apiToken: process.env.LAMAH_API_TOKEN,
-    baseUrl: process.env.LAMAH_BASE_URL || 'https://sms.lamah.com',
-    webhookSecret: process.env.LAMAH_WEBHOOK_SECRET
+    baseUrl: process.env.LAMAH_BASE_URL || 'https://sms.lamah.com'
   }
 };
 
@@ -44,7 +42,6 @@ load_dotenv()
 
 LAMAH_API_TOKEN = os.getenv('LAMAH_API_TOKEN')
 LAMAH_BASE_URL = os.getenv('LAMAH_BASE_URL', 'https://sms.lamah.com')
-LAMAH_WEBHOOK_SECRET = os.getenv('LAMAH_WEBHOOK_SECRET')
 ```
 
 </CodeGroup>
@@ -383,123 +380,6 @@ class RateLimitedSMSService {
 
 </CodeGroup>
 
-## Webhook Development
-
-### Setting Up Webhook Endpoints
-
-<CodeGroup>
-
-```javascript Express.js Webhook
-const express = require('express');
-const crypto = require('crypto');
-const app = express();
-
-app.use(express.json());
-
-// Webhook signature verification
-const verifyWebhookSignature = (req, res, next) => {
-  const signature = req.headers['x-lamah-signature'];
-  const payload = JSON.stringify(req.body);
-  const secret = process.env.LAMAH_WEBHOOK_SECRET;
-
-  const expectedSignature = crypto
-    .createHmac('sha256', secret)
-    .update(payload)
-    .digest('hex');
-
-  if (signature !== `sha256=${expectedSignature}`) {
-    return res.status(401).json({ error: 'Invalid signature' });
-  }
-
-  next();
-};
-
-app.post('/webhooks/sms', verifyWebhookSignature, (req, res) => {
-  const { event, message_id, status, delivered_at } = req.body;
-
-  console.log(`Webhook received: ${event} for message ${message_id}`);
-
-  switch (event) {
-    case 'message.delivered':
-      handleMessageDelivered(message_id, delivered_at);
-      break;
-    case 'message.failed':
-      handleMessageFailed(message_id, req.body.error);
-      break;
-    default:
-      console.log(`Unknown event: ${event}`);
-  }
-
-  res.status(200).json({ received: true });
-});
-
-const handleMessageDelivered = (messageId, deliveredAt) => {
-  // Update your database
-  console.log(`Message ${messageId} delivered at ${deliveredAt}`);
-};
-
-const handleMessageFailed = (messageId, error) => {
-  // Handle failed message
-  console.log(`Message ${messageId} failed: ${error}`);
-};
-
-app.listen(3000, () => {
-  console.log('Webhook server running on port 3000');
-});
-```
-
-```python Flask Webhook
-from flask import Flask, request, jsonify
-import hashlib
-import hmac
-import os
-
-app = Flask(__name__)
-
-def verify_webhook_signature(payload, signature, secret):
-    expected_signature = hmac.new(
-        secret.encode('utf-8'),
-        payload.encode('utf-8'),
-        hashlib.sha256
-    ).hexdigest()
-
-    return hmac.compare_digest(f"sha256={expected_signature}", signature)
-
-@app.route('/webhooks/sms', methods=['POST'])
-def handle_sms_webhook():
-    signature = request.headers.get('X-Lamah-Signature')
-    payload = request.get_data(as_text=True)
-    secret = os.getenv('LAMAH_WEBHOOK_SECRET')
-
-    if not verify_webhook_signature(payload, signature, secret):
-        return jsonify({'error': 'Invalid signature'}), 401
-
-    data = request.json
-    event = data.get('event')
-    message_id = data.get('message_id')
-
-    print(f"Webhook received: {event} for message {message_id}")
-
-    if event == 'message.delivered':
-        handle_message_delivered(message_id, data.get('delivered_at'))
-    elif event == 'message.failed':
-        handle_message_failed(message_id, data.get('error'))
-
-    return jsonify({'received': True})
-
-def handle_message_delivered(message_id, delivered_at):
-    # Update your database
-    print(f"Message {message_id} delivered at {delivered_at}")
-
-def handle_message_failed(message_id, error):
-    # Handle failed message
-    print(f"Message {message_id} failed: {error}")
-
-if __name__ == '__main__':
-    app.run(port=3000, debug=True)
-```
-
-</CodeGroup>
 
 ## Performance Optimization
 
@@ -616,37 +496,4 @@ class SMSService {
   <Card title="Rate Limiting" icon="gauge">
     Implement client-side rate limiting to prevent abuse
   </Card>
-  <Card title="Webhook Security" icon="lock">
-    Always verify webhook signatures
-  </Card>
 </CardGroup>
-
-## Documentation Preview
-
-To preview these documentation changes locally:
-
-<Info>
-  **Prerequisite**: Please install Node.js (version 19 or higher) before proceeding.
-</Info>
-
-**Step 1**: Install Mintlify:
-
-<CodeGroup>
-
-```bash npm
-npm i -g mintlify
-```
-
-```bash yarn
-yarn global add mintlify
-```
-
-</CodeGroup>
-
-**Step 2**: Navigate to the docs directory and run:
-
-```bash
-mintlify dev
-```
-
-A local preview will be available at `http://localhost:3000`.

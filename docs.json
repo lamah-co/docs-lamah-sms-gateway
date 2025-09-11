@@ -25,9 +25,7 @@
             "group": "Essentials",
             "pages": [
               "essentials/authentication",
-              "essentials/error-handling",
-              "essentials/rate-limits",
-              "essentials/best-practices"
+              "essentials/error-handling"
             ]
           }
         ]

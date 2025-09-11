@@ -284,26 +284,7 @@ message_status = poll_message_status('a3a7b9a2-9d3f-4a7e-9b4e-13b1e9b1f2aa')
 
 </CodeGroup>
 
-## Webhook Alternative
-
-<Tip>
-  For real-time status updates, consider setting up webhooks instead of polling. Webhooks provide immediate notifications when message status changes.
-</Tip>
-
-Instead of polling, you can configure webhooks to receive automatic status updates:
-
-```json
-{
-  "event": "message.delivered",
-  "message_id": "msg_123456789",
-  "status": "delivered",
-  "delivered_at": "2024-01-15T10:30:15Z",
-  "delivery_report": {
-    "carrier": "Verizon",
-    "country": "US"
-  }
-}
-```
+<!-- Webhook alternative removed -->
 
 ## Error Handling
 
